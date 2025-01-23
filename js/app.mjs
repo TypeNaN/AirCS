@@ -63,5 +63,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     page404     : new page404(app),
   }
 
-  await app.spa.Route(route, window.location.pathname)
+  const root = '/AirCS' // github repository name
+  await app.spa.Route(root, route, window.location.pathname)
 })

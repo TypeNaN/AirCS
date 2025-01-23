@@ -66,11 +66,11 @@ export default class {
     return urlquery
   }
 
-  async Route(pages, path, query) {
+  async Route(root, pages, path, query) {
     this.pages = pages
     this.routes = []
     for (const page in pages) {
-      this.routes.push({ path: pages[page].path, view: pages[page] })
+      this.routes.push({ path: `${root}${pages[page].path}`, view: pages[page] })
     }
     const matches = this.routes.map((route) => ({ route: route, result: path.match(this.getRoute(route.path)) }))
     const match = matches.find((m) => m.result !== null) || { route: this.routes[0], result: [path] }

@@ -4,7 +4,7 @@ import Page   from '../page.mjs'
 export default class extends Page {
   constructor(app) {
     super(app, {
-      path      : './landing',
+      path      : '/landing',
       name      : 'Landing',
       menu      : 'Landing',
       title     : 'Welcome to Professional Aircon Cleaning Service.',
