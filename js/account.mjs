@@ -30,7 +30,7 @@ export default class extends dbquery {
 
   async RequestLine() {
     //console.log('RequestLine')
-    return await fetch('https://6792afed0601dd62f097f555--aircs.netlify.app/.netlify/functions/v1/line/clientid', {
+    return await fetch('https://6792b2c532e8e260970460cd--aircs.netlify.app/.netlify/functions/v1/line/clientid', {
       method: 'GET'
     }).then(async response => {
       if (!response.ok) return
@@ -54,7 +54,7 @@ export default class extends dbquery {
 
   async RequestLogin(code) {
     //console.log('RequestLogin')
-    return await fetch('https://6792afed0601dd62f097f555--aircs.netlify.app/.netlify/functions/v1/user/login', {
+    return await fetch('https://6792b2c532e8e260970460cd--aircs.netlify.app/.netlify/functions/v1/user/login', {
       method  : 'POST',
       headers : { 'Content-Type': 'application/json' },
       body: JSON.stringify({ code: code })
