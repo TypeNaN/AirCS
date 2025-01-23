@@ -1,0 +1,272 @@
+import Notify from '../notify.mjs'
+import Dialog from '../dialog.mjs'
+import page   from '../page.mjs'
+import device_props from '../device_props.mjs'
+
+
+export default class extends page {
+  constructor(app) {
+    super(app, {
+      path      : '/air',
+      name      : 'Air',
+      menu      : 'แอร์',
+      title     : 'เครื่องปรับอากาศ',
+      icon      : '',
+      callback  : null,
+      navShow   : false,
+    })
+
+    this.location  = app.location
+    this.device    = app.device
+
+  }
+
+  Destroy() { super.Destroy() }
+
+  async Render(params, query) {
+    super.Render(params, query)
+
+    parent = document.body
+    parent.appendChild(this.header)
+    parent.appendChild(this.body)
+    parent.appendChild(this.footer)
+
+    this.account.Profile(this.header)
+
+    //new Notify({ head : 'WELCOME', body : 'Welcome to Professional Aircon Cleaning Service.' })
+
+    if (!query || !query.location) { return this.HandlerNoLocation() }
+
+    const location = await this.location.GetBy(query.location)
+    if (!location) { return this.HandlerNoLocation() }
+
+    const devices = await this.device.GetFrom('location', query.location)
+    if (devices.length < 1) { return this.HandlerNoDevice(query.location) }
+
+    this.DrawDevices(devices, query)
+
+  }
+
+  async DrawDevices(devices, query) {
+    this.body.innerHTML = ''
+    const container     = document.createElement('div')
+    container.id        = 'device-container'
+    container.className = 'device-container'
+    this.body.appendChild(container)
+
+    devices.forEach(async device => {
+      const item      = document.createElement('div')
+      item.id         = `device-${device.id}`
+      item.className  = 'device-item'
+      item.innerHTML  = `
+        <label>ชื่อ:</label><div id="name-${device.id}" class="device-name">${device.name}</div>
+        <label>รายละเอียด:</label> <div id="desc-${device.id}" class="device-detail">${device.detail}</div>
+        <label>ประเภท:</label> <div id="type-${device.id}" class="device-type">${device_props.type[device.type].name}</div>
+        <label>ขนาด:</label> <div id="btu-${device.id}" class="device-btu">${device_props.btu[device.btu].name}</div>
+        <label>น้ำยา:</label> <div id="coolant-${device.id}" class="device-coolant">${device_props.coolant[device.coolant].name}</div>
+        <label>ล้างครั้งล่าสุด:</label> <div id="last-${device.id}" class="device-last">${device.last || 'ยังไม่เคยล้าง'}</div>
+        <div class="location-footer">
+
+          <svg id="icon-svg-edit-${device.id}"
+            class="icon-svg-edit"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round">
+            <path d="M 12,2 H 5 c -1,0 -2,0 -2,2 V 20 c 0,1 0,2 2,2 H 19 c 1,0 2,-0 2,-2 v -9" />
+            <path d="m 17,2 a 2,2 0 0 1 3,2 L 12,16 8,17 8,13 Z" id="path2" />
+          </svg>
+
+          <svg id="icon-svg-remove-${device.id}"
+            class="icon-svg-remove"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round">
+            <polyline points="3 6 5 6 21 6"></polyline>
+            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+            <line x1="10" y1="11" x2="10" y2="17"></line>
+            <line x1="14" y1="11" x2="14" y2="17"></line>
+          </svg>
+
+        </div>
+      `
+      container.appendChild(item)
+      document.getElementById(`icon-svg-edit-${device.id}`).onclick = async (e) => {
+        e.preventDefault()
+
+        const dev         = Object.assign({}, device)
+        const editing     = document.createElement('div')
+        const form        = document.createElement('form')
+        const airType     = document.createElement('select')
+        const airBtu      = document.createElement('select')
+        const airCoolant  = document.createElement('select')
+        const airName     = document.createElement('input')
+        const airDetail   = document.createElement('input')
+
+        airType.value     = device.type
+        airBtu.value      = device.btu
+        airCoolant.value  = device.coolant
+        airName.value     = device.name
+        airDetail.value   = device.detail
+
+        airType.innerHTML = device_props.type.map((item, index, array) => {
+          if (index === device.type) {
+            if (item.disabled) return `<option value="${index}" selected disabled>${item.name}</option>`
+            return `<option value="${index}" selected>${item.name}</option>`
+          } else {
+            if (item.disabled) return `<option value="${index}" disabled>${item.name}</option>`
+            return `<option value="${index}">${item.name}</option>`
+          }
+        }).join('')
+
+        airBtu.innerHTML = device_props.btu.map((item, index, array) => {
+          if (index === device.btu) {
+            return `<option value="${index}" selected>${item.name}</option>`
+          } else {
+            return `<option value="${index}">${item.name}</option>`
+          }
+        }).join('')
+
+        airCoolant.innerHTML = device_props.coolant.map((item, index, array) => {
+          if (index === device.btu) {
+            return `<option value="${index}" selected>${item.name}</option>`
+          } else {
+            return `<option value="${index}">${item.name}</option>`
+          }
+        }).join('')
+
+        editing.appendChild(form)
+        form.appendChild(airType)
+        form.appendChild(airBtu)
+        form.appendChild(airCoolant)
+        form.appendChild(airName)
+        form.appendChild(airDetail)
+
+        airName.onkeydown = (e) => {
+          if (e.key === 'Enter') { dev.name = airName.value }
+          else if (e.key === 'Escape') {
+            dev.name      = device.name
+            airName.value = device.name
+          }
+        }
+
+        airDetail.onkeydown = (e) => {
+          if (e.key === 'Enter') { dev.detail = airDetail.value }
+          else if (e.key === 'Escape') {
+            dev.detail      = device.detail
+            airDetail.value = device.detail
+          }
+        }
+
+        airType.onchange    = (e) => { dev.type     = parseInt(airType.value) }
+        airBtu.onchange     = (e) => { dev.btu      = parseInt(airBtu.value) }
+        airCoolant.onchange = (e) => { dev.coolant  = parseInt(airCoolant.value) }
+        airName.onchange    = (e) => { dev.name     = airName.value }
+        airDetail.onchange  = (e) => { dev.detail   = airDetail.value }
+
+        new Dialog({
+          head    : 'แก้ไขรายละเอียดของตัวแอร์',
+          body    : editing,
+          accept  : { label: '✔ บันทึก' , callback: await this.AirEdit(dev, query) },
+          cancel  : { label: '✘ ทิ้ง'   , callback: e => {
+            console.log('ทิ้ง')
+            new Notify({ head: 'ผลการบันทึก', body: 'บันทึกแอร์สำเร็จ คุณสามารถเพิ่มแอร์ได้ต่อเนื่องหากมีอีก' })
+          }}
+        })
+
+      }
+      document.getElementById(`icon-svg-remove-${device.id}`).onclick = async (e) => {
+        e.preventDefault()
+        new Dialog({
+          red: true,
+          head: 'ลบแอร์',
+          body: `ทำการลบแอร์ ${device.name} ออกจากรายการ`,
+          accept: { label: '✔ ลบเลย', callback: await this.AirDelete(device.id, query) },
+          cancel: { label: '✘ ยกเลิก', callback: (e) => console.log('ยกเลิก') },
+        })
+      }
+
+    })
+
+    const addAir      = document.createElement('button')
+    addAir.innerText  = 'เพิ่มแอร์'
+    this.body.appendChild(addAir)
+
+    addAir.onclick = async (e) => {
+      return await this.spa.Change(this.spa.pages.AirAdd, null, { location: query.location })
+    }
+  }
+
+  HandlerNoLocation() {
+    return new Dialog({
+      head    : `ไม่พบสถานที่`,
+      body    : 'ไม่พบสถานที่ หรือสถานที่อาจถูกลบไปแล้ว',
+      accept  : { label: '✔ เพิ่มสถานที่' , callback: async (e) => await this.spa.Change(this.spa.pages.PlaceAdd) },
+      cancel  : { label: '✘ กลับ'      , callback: async (e) => await this.spa.Change(this.spa.pages.Place) },
+    })
+  }
+
+  HandlerNoDevice(location) {
+    return new Dialog({
+      head    : `ไม่พบแอร์`,
+      body    : 'ไม่พบแอร์ หรือแอร์อาจถูกลบไปแล้ว',
+      accept  : { label: '✔ เพิ่มแอร์' , callback: async (e) => await this.spa.Change(this.spa.pages.AirAdd, null, { location: location }) },
+      cancel  : { label: '✘ กลับ'    , callback: async (e) => await this.spa.Change(this.spa.pages.Place) },
+    })
+  }
+
+  async AirEdit(device, query) {
+    return async (e) => {
+      const user = await this.account.GetOnce()
+      if (!user) return
+      return await fetch('/user/device/patch', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${user.token}` },
+        body: JSON.stringify(device)
+      }).then(async (response) => {
+        console.log(response)
+        await this.device.Put(device)
+        const devices = await this.device.GetFrom('location', query.location)
+        if (devices.length < 1) { return this.HandlerNoDevice(query.location) }
+        await this.DrawDevices(devices, query)
+        new Notify({ head : 'ผลการบันทึก', body : 'บันทึกสถานที่สำเร็จ!' })
+      }).catch(async error => {
+        console.error(error)
+        new Notify({ head : 'ผลการบันทึก', body : 'เกิดข้อผิดพลาดในการบันทึกเครื่องปรับอากาศ!' })
+      })
+    }
+  }
+
+  async AirDelete(id, query) {
+    return async (e) => {
+      e.preventDefault()
+      const user = await this.account.GetOnce()
+      if (!user) return
+      return await fetch('/user/device/delete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${user.token}` },
+        body: JSON.stringify({ did: id })
+      }).then(async (response) => {
+        console.log(response)
+        const item = document.getElementById(`device-${id}`)
+        if (item) {
+          const container = document.getElementById('device-container')
+          container.removeChild(item)
+          await this.device.Delete(id)
+        }
+        const devices = await this.device.GetFrom('location', query.location)
+        if (devices.length < 1) { return this.HandlerNoDevice(query.location) }
+        await this.DrawDevices(devices, query)
+        new Notify({ head : 'ผลการบันทึก', body : 'บันทึกสถานที่สำเร็จ!' })
+      }).catch(async error => {
+        console.error(error)
+        new Notify({ head : 'ผลการบันทึก', body : 'เกิดข้อผิดพลาดในการบันทึกเครื่องปรับอากาศ!' })
+      })
+    }
+  }
+}
