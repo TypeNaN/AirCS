@@ -4,7 +4,7 @@ import Page   from '../page.mjs'
 export default class extends Page {
   constructor(app) {
     super(app, {
-      path      : '/landing',
+      path      : './landing',
       name      : 'Landing',
       menu      : 'Landing',
       title     : 'Welcome to Professional Aircon Cleaning Service.',
@@ -22,7 +22,7 @@ export default class extends Page {
     if (query && query.code && query.state) {
       const authorize = await this.account.RequestLogin(query.code)
       if (authorize) {
-        window.history.replaceState(null, '', '/')
+        window.history.replaceState(null, '', './')
         return await this.spa.Change(this.spa.pages.Reservation)
       }
     }
@@ -41,7 +41,7 @@ export default class extends Page {
       let user = await this.account.GetOnce()
       if (user) {
         if ((user.expire * 1000) - Date.now() > 0) {
-          window.history.replaceState(null, '', '/')
+          window.history.replaceState(null, '', './')
           return await this.spa.Change(this.spa.pages.Reservation)
         }
         new Notify({ head : 'User expire', body : "Let's login." })
