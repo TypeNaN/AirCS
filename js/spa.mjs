@@ -72,6 +72,8 @@ export default class {
     for (const page in pages) {
       this.routes.push({ path: `${root}${pages[page].path}`, view: pages[page] })
     }
+    console.log(this.routes)
+
     const matches = this.routes.map((route) => ({ route: route, result: path.match(this.getRoute(route.path)) }))
     const match = matches.find((m) => m.result !== null) || { route: this.routes[0], result: [path] }
     const view = match.route.view
@@ -79,6 +81,7 @@ export default class {
   }
 
   async Change(page, params, query) {
+    console.log(page, params, query)
     if (this.page) this.page.Destroy()
     this.page = page
     this.Title(page.title)
