@@ -30,12 +30,12 @@ export default class extends dbquery {
 
   async RequestLine() {
     //console.log('RequestLine')
-    return await fetch('https://6792b2c532e8e260970460cd--aircs.netlify.app/.netlify/functions/v1/line/clientid', {
+    return await fetch('https://6792b647c8ea91748d3c87cb--aircs.netlify.app/.netlify/functions/v1/line/clientid', {
       method: 'GET'
     }).then(async response => {
       if (!response.ok) return
       const result = await response.json()
-      return result.client_id
+      return result
     }).catch(error => {
       console.error('Error request line client id!', error)
       return
@@ -45,16 +45,16 @@ export default class extends dbquery {
   async RequestAuthorize() {
     //console.log('RequestCode')
     const locales       = 'th'
-    const redirect_uri  = `http://${window.location.hostname}:${window.location.port}`
+    //const redirect_uri  = `http://${window.location.hostname}:${window.location.port}`
     const state         = 'login'
-    const client_id     = await this.RequestLine()
+    const { client_id, redirect_uri } = await this.RequestLine()
     if (!client_id) return
     return window.location.href = `https://access.line.me/oauth2/v2.1/authorize?ui_locales=${locales}&response_type=code&client_id=${client_id}&redirect_uri=${redirect_uri}&state=${state}&scope=profile%20openid`
   }
 
   async RequestLogin(code) {
     //console.log('RequestLogin')
-    return await fetch('https://6792b2c532e8e260970460cd--aircs.netlify.app/.netlify/functions/v1/user/login', {
+    return await fetch('https://6792b647c8ea91748d3c87cb--aircs.netlify.app/.netlify/functions/v1/user/login', {
       method  : 'POST',
       headers : { 'Content-Type': 'application/json' },
       body: JSON.stringify({ code: code })
