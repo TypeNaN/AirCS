@@ -82,7 +82,7 @@ export default class extends page {
 
       this.location.Put(info)
 
-      await fetch('/user/location/add', {
+      await fetch(`${this.api}/location/add`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${user.token}` },
         body: JSON.stringify(info),

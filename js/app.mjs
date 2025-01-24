@@ -52,6 +52,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   await app.device.Store(app.db, 'device')
   await app.booking.Store(app.db, 'booking')
 
+  app.api_v1 = 'https://6793c4f4e2d580b88c5cab11--aircs.netlify.app/.netlify/functions/v1'
+
   const route = {
     Landing     : new Landing(app),
     //Test        : new Test(app),

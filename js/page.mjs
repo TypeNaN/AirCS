@@ -8,6 +8,7 @@ export default class {
     this.right    = app.spa.right
     this.footer   = app.spa.footer
     this.headName = app.spa.headName
+    this.api      = app.api_v1
 
     this.path     = prop.path
     this.name     = prop.name

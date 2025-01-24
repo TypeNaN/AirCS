@@ -189,7 +189,7 @@ export default class extends page {
     return async (e) => {
       const user = await this.account.GetOnce()
       if (!user) return
-      return await fetch('/user/location/patch', {
+      return await fetch(`${this.api}/location/patch`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${user.token}` },
         body: JSON.stringify(loc)
@@ -211,7 +211,7 @@ export default class extends page {
       e.preventDefault()
       const user = await this.account.GetOnce()
       if (!user) return
-        return await fetch('/user/location/delete', {
+      return await fetch(`${this.api}/location/delete`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${user.token}` },
           body: JSON.stringify({ data: id })

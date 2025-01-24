@@ -101,7 +101,7 @@ export default class extends page {
       air.coolant = parseInt(airCoolant.value)
       air.detail  = airDetail.value
 
-      await fetch('/user/device/add', {
+      await fetch(`${this.api}/device/add`, {
         method  : 'POST',
         headers : { 'Content-Type': 'application/json', Authorization: `Bearer ${user.token}`},
         body: JSON.stringify(air)
