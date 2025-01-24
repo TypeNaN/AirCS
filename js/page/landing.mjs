@@ -19,8 +19,6 @@ export default class extends Page {
   async Render(params, query) {
     super.Render(params, query)
 
-    console.log(params, query)
-
     if (query && query.code && query.state) {
       const authorize = await this.account.RequestLogin(query.code)
       if (authorize) {
