@@ -5,7 +5,7 @@ export default class extends dbquery {
     super()
     this._isRefreshing  = false
     this._Refresher     = null
-    this.api_root       = 'https://6793dc57a0aeb28b0f67fdf2--aircs.netlify.app/.netlify/functions/v1'
+    this.api_root       = 'https://6793f52a6c295d275c49ff57--aircs.netlify.app/.netlify/functions/v1'
 
   }
 
