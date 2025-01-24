@@ -5,6 +5,8 @@ export default class extends dbquery {
     super()
     this._isRefreshing  = false
     this._Refresher     = null
+    this.api_root       = 'https://6793c4f4e2d580b88c5cab11--aircs.netlify.app/.netlify/functions/v1'
+
   }
 
   _deschema() {
@@ -30,7 +32,7 @@ export default class extends dbquery {
 
   async RequestLine() {
     //console.log('RequestLine')
-    return await fetch('https://6792b647c8ea91748d3c87cb--aircs.netlify.app/.netlify/functions/v1/line/clientid', {
+    return await fetch(`${this.api_root}/line/clientid`, {
       method: 'GET'
     }).then(async response => {
       if (!response.ok) return
@@ -49,13 +51,13 @@ export default class extends dbquery {
     const state         = 'login'
     const { client_id, redirect_uri } = await this.RequestLine()
     if (!client_id) return
-    return window.location.href = `https://access.line.me/oauth2/v2.1/authorize?ui_locales=${locales}&response_type=code&client_id=${client_id}&redirect_uri=${redirect_uri}&state=${state}&scope=profile%20openid`
+    return window.location.href = `https://access.line.me/oauth2/v2.1/authorize?ui_locales=${locales}&response_type=code&client_id=${client_id}&redirect_uri=${encodeURIComponent(redirect_uri)}&state=${state}&scope=profile%20openid`
+
   }
 
   async RequestLogin(code) {
     //console.log('RequestLogin')
-    console.log(code)
-    return await fetch('https://6792b647c8ea91748d3c87cb--aircs.netlify.app/.netlify/functions/v1/user/login', {
+    return await fetch(`${this.api_root}/user/login`, {
       method  : 'POST',
       headers : { 'Content-Type': 'application/json' },
       body: JSON.stringify({ code: code })
@@ -93,7 +95,7 @@ export default class extends dbquery {
     else return await this.RequestAuthorize()
 
     this._Refreshing = setTimeout(async () => {
-      await fetch('/user/refresh', {
+      await fetch(`${this.api_root}/user/refresh`, {
         method  : 'POST',
         headers : { 'Content-Type': 'application/json', Authorization: `Bearer ${user.token}` },
       }).then(async (response) => {
@@ -118,7 +120,7 @@ export default class extends dbquery {
   async RequestLogout() {
     const user = await this.GetOnce()
     if (!user) return
-    return await fetch('/user/logout', {
+    return await fetch(`${this.api_root}/user/logout`, {
       method  : 'POST',
       headers : { 'Content-Type': 'application/json', Authorization: `Bearer ${user.token}` },
     }).then(async (response) => {
