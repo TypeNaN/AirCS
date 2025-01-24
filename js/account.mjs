@@ -54,6 +54,7 @@ export default class extends dbquery {
 
   async RequestLogin(code) {
     //console.log('RequestLogin')
+    console.log(code)
     return await fetch('https://6792b647c8ea91748d3c87cb--aircs.netlify.app/.netlify/functions/v1/user/login', {
       method  : 'POST',
       headers : { 'Content-Type': 'application/json' },
