@@ -5,7 +5,7 @@ export default class extends dbquery {
     super()
     this._isRefreshing  = false
     this._Refresher     = null
-    this.api_root       = 'https://6793f52a6c295d275c49ff57--aircs.netlify.app/.netlify/functions/v1'
+    this.api_root       = 'https://6794ff8ce1da87a8e93367cc--aircs.netlify.app/.netlify/functions/v1'
 
   }
 
@@ -125,11 +125,11 @@ export default class extends dbquery {
       headers : { 'Content-Type': 'application/json', Authorization: `Bearer ${user.token}` },
     }).then(async (response) => {
       await this.Delete(user.id)
-      return window.location.href = '/'
+      return window.location.href = '/AirCS/'
     }).catch(async error => {
       console.error('Error:', error)
       await this.Delete(user.id)
-      return window.location.href = '/'
+      return window.location.href = '/AirCS/'
     })
   }
 
@@ -154,7 +154,7 @@ export default class extends dbquery {
 
   async Profile(parent) {
     const user = await this.GetOnce()
-    if (!user) return window.location.href = '/'
+    if (!user) return window.location.href = '/AirCS/'
 
     this.RequestRefresh()
 

@@ -192,7 +192,7 @@ export default class extends page {
     const start = this.AdjustDate(this.today, {}, true, true)
     const end   = this.AdjustDate(this.today, { days: 6, hours: 23, minutes: 59, seconds: 59.999 }, true, true)
 
-    await fetch('/booking/get', {
+    await fetch(`${this.api}/booking/get`, {
       method  : 'POST',
       headers : { 'Content-Type': 'application/json', Authorization: `Bearer ${this.user.token}` },
       body: JSON.stringify({
@@ -504,7 +504,7 @@ export default class extends page {
   }
 
   async BookingAdd(event) {
-    await fetch('/booking/add', {
+    await fetch(`${this.api}/booking/add`, {
       method  : 'POST',
       headers : { 'Content-Type': 'application/json', Authorization: `Bearer ${this.user.token}` },
       body: JSON.stringify(event),
@@ -549,7 +549,7 @@ export default class extends page {
 
   async BookingAddBatch(events) {
     console.log(events)
-    await fetch('/booking/batch/add', {
+    await fetch(`${this.api}/booking/batch/add`, {
       method  : 'POST',
       headers : { 'Content-Type': 'application/json', Authorization: `Bearer ${this.user.token}` },
       body: JSON.stringify({ events: events }),
@@ -600,7 +600,7 @@ export default class extends page {
   BookingDelete(target) {
     return async (e) => {
       e.preventDefault()
-      await fetch('/booking/delete', {
+      await fetch(`${this.api}/booking/delete`, {
         method  : 'POST',
         headers : { 'Content-Type': 'application/json', Authorization: `Bearer ${this.user.token}` },
         body: JSON.stringify({ id: target.booked.id}),
