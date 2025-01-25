@@ -532,9 +532,9 @@ export default class extends page {
           booked.lid  = 'secret'
         }
 
-
         console.log(result)
         console.log(booked)
+
         this.calendar.push(result)
         await this.booking.Add(booked)
         new Notify({ head : 'ผลการจองคิว', body : 'จองคิวสำเร็จ!' })
@@ -542,9 +542,9 @@ export default class extends page {
         this.DrawCalendar()
         return
       }
-      new Notify({ red: true, head : 'ผลการจองคิว', body : 'เกิดข้อผิดพลาดในการจองคิว!' })
+      new Notify({ red: true, head : 'ผลการจองคิว', body : `เกิดข้อผิดพลาดในการจองคิว!<br/>${response.status} ${response.statusText}` })
     }).catch(async error => {
-      new Notify({ red: true, head : 'ผลการจองคิว', body : 'เกิดข้อผิดพลาดในการจองคิว!' })
+      new Notify({ red: true, head : 'ผลการจองคิว', body : `เกิดข้อผิดพลาดในการจองคิว!<br/>${error.code} ${error.message}` })
       console.error('Error:', error)
     })
   }
@@ -592,9 +592,9 @@ export default class extends page {
           }
         }
       }
-      new Notify({ red: true, head : 'ผลการจองคิว', body : 'เกิดข้อผิดพลาดในการจองคิว!' })
-    }).catch(error => {
-      new Notify({ red: true, head : 'ผลการจองคิว', body : 'เกิดข้อผิดพลาดในการจองคิว!' })
+      new Notify({ red: true, head : 'ผลการจองคิว', body : `เกิดข้อผิดพลาดในการจองคิว!<br/>${response.status} ${response.statusText}` })
+    }).catch(async error => {
+      new Notify({ red: true, head : 'ผลการจองคิว', body : `เกิดข้อผิดพลาดในการจองคิว!<br/>${error.code} ${error.message}` })
       console.error('Error:', error)
     })
   }
@@ -616,11 +616,10 @@ export default class extends page {
           new Notify({ head : 'ผลการยกเลิกคิว', body : 'ยกเลิกคิวสำเร็จ!' })
           return
         }
-        new Notify({ red: true, head : 'ผลการจองคิว', body : 'เกิดข้อผิดพลาดในการยกเลิกคิว!' })
-      }).catch(error => {
+        new Notify({ red: true, head : 'ผลการจองคิว', body : `เกิดข้อผิดพลาดในการยกเลิกคิว!<br/>${response.status} ${response.statusText}` })
+      }).catch(async error => {
+        new Notify({ red: true, head : 'ผลการจองคิว', body : `เกิดข้อผิดพลาดในการยกเลิกคิว!<br/>${error.code} ${error.message}` })
         console.error('Error:', error)
-        new Notify({ red: true, head : 'ผลการจองคิว', body : 'เกิดข้อผิดพลาดในการยกเลิกคิว!' })
-      })
     }
   }
 
