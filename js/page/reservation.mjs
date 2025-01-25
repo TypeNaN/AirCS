@@ -620,6 +620,7 @@ export default class extends page {
       }).catch(async error => {
         new Notify({ red: true, head : 'ผลการจองคิว', body : `เกิดข้อผิดพลาดในการยกเลิกคิว!<br/>${error.code} ${error.message}` })
         console.error('Error:', error)
+      })
     }
   }
 
