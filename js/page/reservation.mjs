@@ -532,9 +532,11 @@ export default class extends page {
           booked.lid  = 'secret'
         }
 
-        await this.booking.Add(booked)
+
+        console.log(result)
+        console.log(booked)
         this.calendar.push(result)
-        document.getElementById('bookingForm').reset()
+        await this.booking.Add(booked)
         new Notify({ head : 'ผลการจองคิว', body : 'จองคิวสำเร็จ!' })
         this.DrawDevice()
         this.DrawCalendar()
