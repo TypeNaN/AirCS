@@ -9,7 +9,7 @@ export default class extends page {
       menu: 'ทดสอบ',
       title: 'หน้านี้ใช้ทดสอบ',
       icon: '',
-      callback: () => app.spa.Change(this),
+      callback: () => app.SPA.Change(this),
       navShow: true,
     })
   }
@@ -26,7 +26,7 @@ export default class extends page {
     parent.appendChild(this.body)
     parent.appendChild(this.footer)
 
-    this.user.Profile(this.header)
+    this.Account.Profile(this.header)
 
     new Notify({ head : 'WELCOME', body : 'Welcome to Professional Aircon Cleaning Service.' })
   }

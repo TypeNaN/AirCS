@@ -1,13 +1,13 @@
 export default class {
   constructor(app, prop) {
 
-    this.header   = app.spa.header
-    this.body     = app.spa.body
-    this.content  = app.spa.content
-    this.left     = app.spa.left
-    this.right    = app.spa.right
-    this.footer   = app.spa.footer
-    this.headName = app.spa.headName
+    this.header   = app.SPA.header
+    this.body     = app.SPA.body
+    this.content  = app.SPA.content
+    this.left     = app.SPA.left
+    this.right    = app.SPA.right
+    this.footer   = app.SPA.footer
+    this.headName = app.SPA.headName
     this.api      = app.api_v1
 
     this.path     = prop.path
@@ -27,11 +27,13 @@ export default class {
         // จะสร้างใหม่ต่อเมื่อ refesh หน้าเว็บเท่านั้น
         this.nav.addEventListener('click', this.nav.callback)
       }
-      app.spa.NavAdd(this.nav)
+      app.SPA.NavAdd(this.nav)
     }
 
-    this.spa = app.spa
-    this.account = app.account
+    this.SPA      = app.SPA
+    this.Account  = app.Account
+    this.api_root = app.api_root
+    this.base     = app.base
   }
 
   Destroy() {

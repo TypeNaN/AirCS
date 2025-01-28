@@ -29,7 +29,7 @@ export default class {
     return await this._rw.Put(data)
   }
   async Add(data) { return await this._rw.Add(data) }
-  async Delete(value) { return await this._rw.Delete(value) }
+  async Delete(value, sort) { return await this._rw.Delete(value, sort) }
   async Clear(store) { return await this._rw.Clear(store) }
 
   async GetFrom(index, value, sort) { return await this._r.GetFrom(index, value, sort) }

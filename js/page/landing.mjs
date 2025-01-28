@@ -20,10 +20,10 @@ export default class extends Page {
     super.Render(params, query)
 
     if (query && query.code && query.state) {
-      const authorize = await this.account.RequestLogin(query.code)
+      const authorize = await this.Account.RequestLogin(query.code)
       if (authorize) {
-        window.history.replaceState(null, '', '/AirCS/')
-        return await this.spa.Change(this.spa.pages.Reservation)
+        window.history.replaceState(null, '', `${this.base}/`)
+        return await this.SPA.Change(this.SPA.Pages.Place)
       }
     }
 
@@ -38,17 +38,17 @@ export default class extends Page {
 
     document.getElementById('checkLogin').onclick = async (e) => {
       e.preventDefault()
-      let user = await this.account.GetOnce()
+      let user = await this.Account.GetOnce()
       if (user) {
         if ((user.expire * 1000) - Date.now() > 0) {
-          window.history.replaceState(null, '', '/AirCS/')
-          return await this.spa.Change(this.spa.pages.Reservation)
+          window.history.replaceState(null, '', `${this.base}/`)
+          return await this.SPA.Change(this.SPA.Pages.Place)
         }
         new Notify({ head : 'User expire', body : "Let's login." })
-        return setTimeout(async () => { return await this.account.RequestAuthorize() }, 1000)
+        return setTimeout(async () => { return await this.Account.RequestAuthorize() }, 1000)
       } else {
         new Notify({ head : 'Request Authorize', body : "Let's login." })
-        return setTimeout(async () => { return await this.account.RequestAuthorize() }, 1000)
+        return setTimeout(async () => { return await this.Account.RequestAuthorize() }, 1000)
       }
     }
   }

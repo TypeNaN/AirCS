@@ -87,14 +87,44 @@ export default class {
           request.onsuccess   = (event) => resolve(event.target.result)
         })
       },
+      //Delete: async (value) => {
+      //  return await new Promise((resolve, reject) => {
+      //    const transaction   = this._db.transaction(store, 'readwrite')
+      //    const objectStore   = transaction.objectStore(store)
+      //    const request       = objectStore.delete(value)
+      //    request.onerror     = (event) => reject(event.target.error)
+      //    request.onblocked   = (event) => reject(event.target.error)
+      //    request.onsuccess   = (event) => resolve(event.target.result)
+      //  })
+      //},
       Delete: async (value) => {
         return await new Promise((resolve, reject) => {
-          const transaction   = this._db.transaction(store, 'readwrite')
-          const objectStore   = transaction.objectStore(store)
-          const request       = objectStore.delete(value)
-          request.onerror     = (event) => reject(event.target.error)
-          request.onblocked   = (event) => reject(event.target.error)
-          request.onsuccess   = (event) => resolve(event.target.result)
+          const transactions  = this._db.transaction(store, 'readwrite')
+          const objectStore   = transactions.objectStore(store)
+          const result        = []
+
+          const request = (Array.isArray(value) || value.length > 0)
+            ? objectStore.openCursor(null, 'next')
+            : objectStore.delete(value)
+
+          request.onerror   = (event) => reject(event.target.error)
+          request.onblocked = (event) => reject(event.target.error)
+          request.onsuccess = (event) => {
+            if (Array.isArray(value) || value.length > 0) {
+              const cursor  = event.target.result
+              if (cursor) {
+                if (value.includes(cursor.value.id)) {
+                  result.push(cursor.value.id)
+                  cursor.delete()
+                }
+                cursor.continue()
+              } else {
+                resolve(result)
+              }
+            } else {
+              resolve(event.target.result)
+            }
+          }
         })
       },
       Clear: async (store) => {

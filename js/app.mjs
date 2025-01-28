@@ -16,55 +16,75 @@ import Reservation  from './page/reservation.mjs'
 import page404      from './page/404.mjs'
 
 
-const db = 'AirCS'
-const stores = [
-  { key: 'account', option: { keyPath: 'id' }},
-  { key: 'location', option: { keyPath: 'id' }},
-  { key: 'device', option: { keyPath: 'id' }, indexes: [
-    { name: 'location', keyPath: 'lid', option: { unique: false }},
-  ]},
-  { key: 'booking', option: { keyPath: 'id' }, indexes: [
-    { name: 'did', keyPath: 'did', option: { unique: true }},
-    { name: 'start', keyPath: 'start.dateTime', option: { unique: true }},
-  ]},
-]
-
 class App {
   constructor() {
-    this.db       = new DB(db, stores)
-    this.spa      = new SPA()
-    this.account  = new ACCOUNT()
-    this.location = new LOCATION()
-    this.device   = new DEVICE()
-    this.booking  = new BOOKING()
+    this.name = 'AirCS'
+
+    this.base = `/${this.name}`
+
+    this.apis = {
+      v1: {
+        localhost: this.base,
+        netlify: 'http://localhost:8888/.netlify/functions/v1',
+        github: 'https://6798d5c2534a5e3513c38a6c--aircs.netlify.app/.netlify/functions/v1'
+      }
+    }
+
+    this.dbName = this.name
+    this.dbStores = [
+      { key: 'account'    , option: { keyPath: 'id' }},
+      { key: 'location'   , option: { keyPath: 'id' }},
+      { key: 'device'     , option: { keyPath: 'id' }, indexes: [
+        { name: 'location', keyPath: 'lid', option: { unique: false }},
+      ]},
+      { key: 'booking'  , option: { keyPath: 'id' } , indexes: [
+        { name: 'did'   , keyPath: 'did'            , option: { unique: true }},
+        { name: 'start' , keyPath: 'start.dateTime' , option: { unique: true }},
+      ]},
+    ]
+  }
+
+  async init({ api, host }) {
+
+    this.api_root = this.apis[api][host] || ''
+
+    this.DB       = new DB(this.dbName, this.dbStores)
+    this.Account  = new ACCOUNT(this.api_root)
+    this.Location = new LOCATION()
+    this.Device   = new DEVICE()
+    this.Booking  = new BOOKING()
+
+    await this.DB.Open()
+    await this.Account.Store  ( this.DB, 'account'  )
+    await this.Location.Store ( this.DB, 'location' )
+    await this.Device.Store   ( this.DB, 'device'   )
+    await this.Booking.Store  ( this.DB, 'booking'  )
+
+
+    this.SPA    = new SPA()
+    this.routes = {
+      Landing     : new Landing(this),
+      //Test        : new Test(this),
+      Place       : new Place(this),
+      PlaceAdd    : new PlaceAdd(this),
+      Air         : new Air(this),
+      AirAdd      : new AirAdd(this),
+      Reservation : new Reservation(this),
+      page404     : new page404(this),
+    }
+
+  }
+  async Serv(pathname, query) {
+    await this.SPA.Route(this.base, this.routes, pathname, query)
   }
 }
 
-ononline = e =>  console.log('online')
+ononline  = e =>  console.log('online')
 onoffline = e =>  console.log('offline')
 
 document.addEventListener('DOMContentLoaded', async () => {
   const app = new App()
-  await app.db.Open()
-
-  await app.account.Store(app.db, 'account')
-  await app.location.Store(app.db, 'location')
-  await app.device.Store(app.db, 'device')
-  await app.booking.Store(app.db, 'booking')
-
-  app.api_v1 = 'https://67953613b0b4eea7d70d8c44--aircs.netlify.app/.netlify/functions/v1'
-
-  const route = {
-    Landing     : new Landing(app),
-    //Test        : new Test(app),
-    Place       : new Place(app),
-    PlaceAdd    : new PlaceAdd(app),
-    Air         : new Air(app),
-    AirAdd      : new AirAdd(app),
-    Reservation : new Reservation(app),
-    page404     : new page404(app),
-  }
-
-  const root = '/AirCS' // github repository name
-  await app.spa.Route(root, route, window.location.pathname)
+  //await app.init({ api: 'v1', host: window.location.hostname })
+  await app.init({ api: 'v1', host: 'github' })
+  await app.Serv(window.location.pathname)
 })

@@ -15,7 +15,7 @@ export default class extends page {
       navShow   : false,
     })
 
-    this.device = app.device
+    this.Device = app.Device
 
   }
 
@@ -29,7 +29,7 @@ export default class extends page {
     parent.appendChild(this.body)
     parent.appendChild(this.footer)
 
-    this.account.Profile(this.header)
+    this.Account.Profile(this.header)
 
     //new Notify({ head : 'เพิ่มแอร์', body : 'กรุณาเพิ่มแอร์เพื่อรับบริการ' })
 
@@ -83,7 +83,7 @@ export default class extends page {
     document.getElementById('bookingForm').onsubmit = async (e) => {
       e.preventDefault()
 
-      const user = await this.account.GetOnce()
+      const user = await this.Account.GetOnce()
       if (!user) return
 
       const airType     = document.getElementById('air-type')
@@ -92,7 +92,7 @@ export default class extends page {
       const airName     = document.getElementById('air-name')
       const airDetail   = document.getElementById('air-detail')
 
-      const air   = this.device.Schema()
+      const air   = this.Device.Schema()
       air.uid     = user.id
       air.lid     = query.location
       air.type    = parseInt(airType.value)
@@ -101,12 +101,13 @@ export default class extends page {
       air.coolant = parseInt(airCoolant.value)
       air.detail  = airDetail.value
 
-      await fetch(`${this.api}/device/add`, {
+      console.log(air)
+      await fetch(`${this.api_root}/device/add`, {
         method  : 'POST',
         headers : { 'Content-Type': 'application/json', Authorization: `Bearer ${user.token}`},
         body: JSON.stringify(air)
       }).then(() => {
-        this.device.Put(air)
+        this.Device.Put(air)
         new Notify({ head: 'ผลการบันทึก', body: 'บันทึกแอร์สำเร็จ คุณสามารถเพิ่มแอร์ได้ต่อเนื่องหากมีอีก' })
         document.getElementById('bookingForm').reset()
       }).catch(error => {

@@ -29,6 +29,7 @@ export default class {
 
     this.header.appendChild(this.headName)
     this.header.appendChild(this.nav)
+
   }
 
   Title(title) { document.title = title }
@@ -67,7 +68,7 @@ export default class {
   }
 
   async Route(root, pages, path, query) {
-    this.pages = pages
+    this.Pages = pages
     this.routes = []
     for (const page in pages) {
       this.routes.push({ path: `${root}${pages[page].path}`, view: pages[page] })

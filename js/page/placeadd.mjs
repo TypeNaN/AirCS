@@ -9,11 +9,11 @@ export default class extends page {
       menu: 'เพิ่มสถานที่',
       title: 'เลือกสถานที่',
       icon: '',
-      callback: () => app.spa.Change(this),
+      callback: null,
       navShow: false,
     })
 
-    this.location = app.location
+    this.Location = app.Location
 
     this.geoScale = 1.6
     this.geoOrigin = [-110, -20]
@@ -41,7 +41,7 @@ export default class extends page {
     parent.appendChild(this.body)
     parent.appendChild(this.footer)
 
-    this.account.Profile(this.header)
+    this.Account.Profile(this.header)
 
     //new Notify({
     //  still: true,
@@ -65,7 +65,7 @@ export default class extends page {
     document.getElementById('bookingForm').onsubmit = async (e) => {
       e.preventDefault()
 
-      const user = await this.account.GetOnce()
+      const user = await this.Account.GetOnce()
       if (!user) return
 
       const locationPlace   = document.getElementById('place')
@@ -73,16 +73,16 @@ export default class extends page {
       const locationDetail  = document.getElementById('detail')
       const locationPhone   = document.getElementById('phone')
 
-      const info  = this.location.Schema()
+      const info  = this.Location.Schema()
       info.uid    = user.id
       info.place  = locationPlace.value
       info.number = locationNumber.value
       info.detail = locationDetail.value
       info.phone  = locationPhone.value
 
-      this.location.Put(info)
+      this.Location.Put(info)
 
-      await fetch(`${this.api}/location/add`, {
+      await fetch(`${this.api_root}/location/add`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${user.token}` },
         body: JSON.stringify(info),
@@ -90,7 +90,7 @@ export default class extends page {
         new Notify({ head : 'ผลการบันทึก', body : 'บันทึกสถานที่สำเร็จ!' })
         document.getElementById('bookingForm').reset()
         document.body.removeChild(this.body)
-        setTimeout(() => { this.spa.Change(this.spa.pages.Place) }, 2000)
+        setTimeout(() => { this.SPA.Change(this.SPA.Pages.Place) }, 2000)
       }).catch(error => {
         new Notify({ head : 'ผลการบันทึก', body : 'เกิดข้อผิดพลาดในการบันทึกสถานที่!' })
         console.error('Error:', error)

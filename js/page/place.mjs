@@ -1,6 +1,7 @@
 import Notify from '../notify.mjs'
 import Dialog from '../dialog.mjs'
 import page   from '../page.mjs'
+import booking from '../booking.mjs'
 
 export default class extends page {
   constructor(app) {
@@ -10,12 +11,13 @@ export default class extends page {
       menu      : 'สถานที่',
       title     : 'สถานที่พักอาศัย',
       icon      : '',
-      callback  : () => app.spa.Change(this),
+      callback  : () => app.SPA.Change(this),
       navShow   : true,
     })
 
-    this.location = app.location
-    this.device   = app.device
+    this.Location = app.Location
+    this.Device   = app.Device
+    this.Booking  = app.Booking
   }
 
   Destroy() { super.Destroy() }
@@ -28,11 +30,11 @@ export default class extends page {
     parent.appendChild(this.body)
     parent.appendChild(this.footer)
 
-    this.account.Profile(this.header)
+    this.Account.Profile(this.header)
 
     //new Notify({ head : 'WELCOME', body : 'Welcome to Professional Aircon Cleaning Service.' })
 
-    const locations = await this.location.Get()
+    const locations = await this.Location.Get()
 
     await this.DrawLocations(locations)
     if (locations.length < 1) { return this.HandlerNoLocation() }
@@ -102,7 +104,7 @@ export default class extends page {
       container.appendChild(item)
 
       document.getElementById(`icon-svg-air-${location.id}`).onclick = async (e) => {
-        return await this.spa.Change(this.spa.pages.Air, null, { location: location.id })
+        return await this.SPA.Change(this.SPA.Pages.Air, null, { location: location.id })
       }
 
       document.getElementById(`icon-svg-edit-${location.id}`).onclick = async (e) => {
@@ -168,7 +170,7 @@ export default class extends page {
         new Dialog({
           red     : true,
           head    : 'ลบสถานที่',
-          body    : `<center>ทำการลบสถานที่ ${location.place} อาคารเลขที่ ${location.number} ออกจากรายการ<br/>เครื่องปรับอากาศที่เพิ่มไว้ในสถานที่นี้จะถูกลบไปด้วยทั้งหมด</center>`,
+          body    : `ทำการลบสถานที่ ${location.place} อาคารเลขที่ ${location.number} ออกจากรายการ<br/>เครื่องปรับอากาศที่เพิ่มไว้ในสถานที่นี้จะถูกลบไปด้วยทั้งหมด<br/>การจองคิวทั้งหมดที่เครื่องปรับอากาศนั้นได้จองไว้ก็จะถูกยกเลิกด้วยเช่นกัน`,
           accept  : { label: '✔ ลบเลย', callback: await this.PlaceDelete(location.id) },
           cancel  : { label: '✘ ยกเลิก', callback: (e) => console.log(e) },
         })
@@ -180,24 +182,23 @@ export default class extends page {
     this.body.appendChild(addLocation)
 
     addLocation.onclick = async (e) => {
-      return await this.spa.Change(this.spa.pages.PlaceAdd)
+      return await this.SPA.Change(this.SPA.Pages.PlaceAdd)
     }
 
   }
 
   async PlaceEdit(loc) {
     return async (e) => {
-      const user = await this.account.GetOnce()
+      const user = await this.Account.GetOnce()
       if (!user) return
-      return await fetch(`${this.api}/location/patch`, {
+      return await fetch(`${this.api_root}/location/patch`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${user.token}` },
         body: JSON.stringify(loc)
       }).then(async (response) => {
-        console.log(response)
         this.body.innerHTML = ''
-        await this.location.Put(loc)
-        await this.DrawLocations(await this.location.Get())
+        await this.Location.Put(loc)
+        await this.DrawLocations(await this.Location.Get())
         new Notify({ head : 'ผลการบันทึก', body : 'บันทึกสถานที่สำเร็จ!' })
       }).catch(async error => {
         console.error(error)
@@ -209,34 +210,118 @@ export default class extends page {
   async PlaceDelete(id) {
     return async (e) => {
       e.preventDefault()
-      const user = await this.account.GetOnce()
+
+      const devices = await this.Device.GetFrom('location', id)
+      const error = await this.DeviceDelete(devices)
+      if (error) {
+        console.error(error)
+        return error
+      }
+
+      const user = await this.Account.GetOnce()
       if (!user) return
-      return await fetch(`${this.api}/location/delete`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${user.token}` },
-          body: JSON.stringify({ data: id })
-        }).then(async (response) => {
-          console.log(response)
-          const device = await this.device.GetFrom('location', id)
-          device.forEach(async device => await this.device.Delete(device.id))
-          await this.location.Delete(id)
-          const locations = await this.location.Get()
-          this.body.innerHTML = ''
-          await this.DrawLocations(await this.location.Get())
-          new Notify({ head : 'ผลการบันทึก', body : 'บันทึกสถานที่สำเร็จ!' })
-          if (locations.length < 1) { return this.HandlerNoLocation() }
-        }).catch(async error => {
-          console.error(error)
-          new Notify({ head : 'ผลการบันทึก', body : 'เกิดข้อผิดพลาดในการบันทึกสถานที่!' })
-        })
+
+      return await fetch(`${this.api_root}/location/delete`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${user.token}` },
+        body: JSON.stringify({ data: id })
+      }).then(async (response) => {
+        console.log(response)
+        await this.Location.Delete(id)
+        this.body.innerHTML = ''
+        const locations = await this.Location.Get()
+        await this.DrawLocations(locations)
+        new Notify({ head : 'ผลการลบ', body : 'ลบสถานที่สำเร็จ!' })
+        if (locations.length < 1) { return this.HandlerNoLocation() }
+      }).catch(async error => {
+        console.error(error)
+        new Notify({ head : 'ผลการลบ', body : 'เกิดข้อผิดพลาดในการลบสถานที่!' })
+      })
     }
   }
+
+  async DeviceDelete(data) {
+
+    if (!Array.isArray(data) || data.length === 0) return false
+
+    const bookings = []
+    const devices = []
+    for (const device of data) {
+      devices.push({ did: device.id })
+      const bookeds = await this.Booking.GetFrom('did', device.id)
+      for (const booked of bookeds) {
+        bookings.push(booked.id)
+      }
+    }
+
+    const error = await this.BookingDelete(bookings)
+    if (error) {
+      console.error(error)
+      return error
+    }
+
+    const user = await this.Account.GetOnce()
+    if (!user) return
+
+    return await fetch(`${this.api_root}/device/batch/delete`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${user.token}` },
+      body: JSON.stringify({ devices: devices })
+    }).then(async (response) => {
+      if (response.ok) {
+        const result = await response.json()
+        console.log(result)
+        const data = result.map(item => { if (item.deletedCount > 0) return item.search.did } )
+        const deleted = await this.Device.Delete(data)
+        new Notify({ head : 'ผลการลบ', body : `ลบเครื่องปรับอากาศสำเร็จ!<br/>จำนวน: ${deleted.length} เครื่อง` })
+        return false
+      }
+      const errmsg = await response.text()
+      new Notify({ red: true, head : 'ผลการลบ', body : `เกิดข้อผิดพลาดในการลบเครื่องปรับอากาศ!<br/>${errmsg}` })
+      return errmsg
+    }).catch(async error => {
+      console.error(error)
+      new Notify({ head : 'ผลการลบ', body : 'เกิดข้อผิดพลาดในการลบเครื่องปรับอากาศ!' })
+    })
+  }
+
+  async BookingDelete(bookings) {
+
+    if (!Array.isArray(bookings) || bookings.length === 0) return false
+
+    const user = await this.Account.GetOnce()
+    if (!user) return
+
+    return await fetch(`${this.api_root}/booking/batch/delete`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${user.token}` },
+      body: JSON.stringify({ events: bookings })
+    }).then(async (response) => {
+      console.log(response)
+      if (response.ok) {
+        const result = await response.json()
+        console.log(result)
+        const data = result.results.map(item => { if (item.deleted) return item.id } )
+        const deleted = await this.Booking.Delete(data)
+        new Notify({ head : 'ผลการลบ', body : `ลบคิวที่จองไว้สำเร็จ!<br/>จำนวน: ${deleted.length} รายการ` })
+        return false
+      }
+      const errmsg = await response.text()
+      new Notify({ red: true, head : 'ผลการลบ', body : `เกิดข้อผิดพลาดในการลบคิวที่จองไว้!<br/>${errmsg}` })
+      return errmsg
+    }).catch(error => {
+      console.error(error)
+      new Notify({ red: true, head : 'ผลการลบ', body : 'เกิดข้อผิดพลาดในการลบคิวที่จองไว้!' })
+      return error
+    })
+  }
+
 
   HandlerNoLocation() {
     return new Dialog({
       head    : `ไม่พบสถานที่`,
-      body    : '<center>ไม่พบสถานที่ หรือสถานที่อาจถูกลบไปแล้ว</center>',
-      accept  : { label: '✔ เพิ่มสถานที่' , callback: async (e) => await this.spa.Change(this.spa.pages.PlaceAdd) },
+      body    : 'ไม่พบสถานที่ หรือสถานที่อาจถูกลบไปแล้ว',
+      accept  : { label: '✔ เพิ่มสถานที่' , callback: async (e) => await this.SPA.Change(this.SPA.Pages.PlaceAdd) },
       cancel  : { label: '✘ ปิด'       , callback: () => console.log('ยกเลิก') },
     })
   }

@@ -1,12 +1,11 @@
 import dbquery from "./dbquery.mjs"
 
 export default class extends dbquery {
-  constructor() {
+  constructor(api_root) {
     super()
     this._isRefreshing  = false
     this._Refresher     = null
-    this.api_root       = 'https://67953613b0b4eea7d70d8c44--aircs.netlify.app/.netlify/functions/v1'
-
+    this.api_root       = api_root
   }
 
   _deschema() {
@@ -35,6 +34,7 @@ export default class extends dbquery {
     return await fetch(`${this.api_root}/line/clientid`, {
       method: 'GET'
     }).then(async response => {
+      console.log(response)
       if (!response.ok) return
       const result = await response.json()
       return result
@@ -47,12 +47,12 @@ export default class extends dbquery {
   async RequestAuthorize() {
     //console.log('RequestCode')
     const locales       = 'th'
-    //const redirect_uri  = `http://${window.location.hostname}:${window.location.port}`
     const state         = 'login'
-    const { client_id, redirect_uri } = await this.RequestLine()
+    let { client_id, redirect_uri } = await this.RequestLine()
+    console.log(client_id, redirect_uri)
     if (!client_id) return
+    redirect_uri  = `http://${window.location.hostname}:${window.location.port}/AirCS/`
     return window.location.href = `https://access.line.me/oauth2/v2.1/authorize?ui_locales=${locales}&response_type=code&client_id=${client_id}&redirect_uri=${encodeURIComponent(redirect_uri)}&state=${state}&scope=profile%20openid`
-
   }
 
   async RequestLogin(code) {
@@ -101,14 +101,12 @@ export default class extends dbquery {
       }).then(async (response) => {
         if (response.ok) {
           const result = await response.json()
-          if (result.success) {
-            user.token    = result.data.token
-            user.expire   = result.data.expire
-            user.modified = this._now()
-            this.Put(user)
-            this._isRefreshing = false
-            this.RequestRefresh()
-          }
+          user.token    = result.token
+          user.expire   = result.expire
+          user.modified = this._now()
+          this.Put(user)
+          this._isRefreshing = false
+          this.RequestRefresh()
         }
       }).catch(error => {
         console.error('Error:', error)
@@ -154,7 +152,7 @@ export default class extends dbquery {
 
   async Profile(parent) {
     const user = await this.GetOnce()
-    if (!user) return window.location.href = '/AirCS/'
+    if (!user) return window.location.href = '/Aircs/'
 
     this.RequestRefresh()
 

@@ -16,8 +16,8 @@ export default class extends page {
       navShow   : false,
     })
 
-    this.location  = app.location
-    this.device    = app.device
+    this.Location  = app.Location
+    this.Device    = app.Device
 
   }
 
@@ -31,16 +31,16 @@ export default class extends page {
     parent.appendChild(this.body)
     parent.appendChild(this.footer)
 
-    this.account.Profile(this.header)
+    this.Account.Profile(this.header)
 
     //new Notify({ head : 'WELCOME', body : 'Welcome to Professional Aircon Cleaning Service.' })
 
     if (!query || !query.location) { return this.HandlerNoLocation() }
 
-    const location = await this.location.GetBy(query.location)
+    const location = await this.Location.GetBy(query.location)
     if (!location) { return this.HandlerNoLocation() }
 
-    const devices = await this.device.GetFrom('location', query.location)
+    const devices = await this.Device.GetFrom('location', query.location)
     if (devices.length < 1) { return this.HandlerNoDevice(query.location) }
 
     this.DrawDevices(devices, query)
@@ -198,7 +198,7 @@ export default class extends page {
     this.body.appendChild(addAir)
 
     addAir.onclick = async (e) => {
-      return await this.spa.Change(this.spa.pages.AirAdd, null, { location: query.location })
+      return await this.SPA.Change(this.SPA.Pages.AirAdd, null, { location: query.location })
     }
   }
 
@@ -206,8 +206,8 @@ export default class extends page {
     return new Dialog({
       head    : `ไม่พบสถานที่`,
       body    : 'ไม่พบสถานที่ หรือสถานที่อาจถูกลบไปแล้ว',
-      accept  : { label: '✔ เพิ่มสถานที่' , callback: async (e) => await this.spa.Change(this.spa.pages.PlaceAdd) },
-      cancel  : { label: '✘ กลับ'      , callback: async (e) => await this.spa.Change(this.spa.pages.Place) },
+      accept  : { label: '✔ เพิ่มสถานที่' , callback: async (e) => await this.SPA.Change(this.SPA.Pages.PlaceAdd) },
+      cancel  : { label: '✘ กลับ'      , callback: async (e) => await this.SPA.Change(this.SPA.Pages.Place) },
     })
   }
 
@@ -215,23 +215,23 @@ export default class extends page {
     return new Dialog({
       head    : `ไม่พบแอร์`,
       body    : 'ไม่พบแอร์ หรือแอร์อาจถูกลบไปแล้ว',
-      accept  : { label: '✔ เพิ่มแอร์' , callback: async (e) => await this.spa.Change(this.spa.pages.AirAdd, null, { location: location }) },
-      cancel  : { label: '✘ กลับ'    , callback: async (e) => await this.spa.Change(this.spa.pages.Place) },
+      accept  : { label: '✔ เพิ่มแอร์' , callback: async (e) => await this.SPA.Change(this.SPA.Pages.AirAdd, null, { location: location }) },
+      cancel  : { label: '✘ กลับ'    , callback: async (e) => await this.SPA.Change(this.SPA.Pages.Place) },
     })
   }
 
   async AirEdit(device, query) {
     return async (e) => {
-      const user = await this.account.GetOnce()
+      const user = await this.Account.GetOnce()
       if (!user) return
-      return await fetch(`${this.api}/device/patch`, {
+      return await fetch(`${this.api_root}/device/patch`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${user.token}` },
         body: JSON.stringify(device)
       }).then(async (response) => {
         console.log(response)
-        await this.device.Put(device)
-        const devices = await this.device.GetFrom('location', query.location)
+        await this.Device.Put(device)
+        const devices = await this.Device.GetFrom('location', query.location)
         if (devices.length < 1) { return this.HandlerNoDevice(query.location) }
         await this.DrawDevices(devices, query)
         new Notify({ head : 'ผลการบันทึก', body : 'บันทึกสถานที่สำเร็จ!' })
@@ -245,9 +245,9 @@ export default class extends page {
   async AirDelete(id, query) {
     return async (e) => {
       e.preventDefault()
-      const user = await this.account.GetOnce()
+      const user = await this.Account.GetOnce()
       if (!user) return
-      return await fetch(`${this.api}/device/delete`, {
+      return await fetch(`${this.api_root}/device/delete`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${user.token}` },
         body: JSON.stringify({ did: id })
@@ -257,9 +257,9 @@ export default class extends page {
         if (item) {
           const container = document.getElementById('device-container')
           container.removeChild(item)
-          await this.device.Delete(id)
+          await this.Device.Delete(id)
         }
-        const devices = await this.device.GetFrom('location', query.location)
+        const devices = await this.Device.GetFrom('location', query.location)
         if (devices.length < 1) { return this.HandlerNoDevice(query.location) }
         await this.DrawDevices(devices, query)
         new Notify({ head : 'ผลการบันทึก', body : 'บันทึกสถานที่สำเร็จ!' })

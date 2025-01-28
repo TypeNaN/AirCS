@@ -12,13 +12,13 @@ export default class extends page {
       title     : 'จองคิวล้างแอร์',
       icon      : '',
       change    : null,
-      callback  : () => app.spa.Change(this),
+      callback  : () => app.SPA.Change(this),
       navShow   : true,
     })
 
-    this.location = app.location
-    this.device   = app.device
-    this.booking  = app.booking
+    this.Location = app.Location
+    this.Device   = app.Device
+    this.Booking  = app.Booking
 
     this.calendar = []
 
@@ -55,18 +55,18 @@ export default class extends page {
     parent.appendChild(this.body)
     parent.appendChild(this.footer)
 
-    this.account.Profile(this.header)
-    this.user = await this.account.GetOnce()
+    this.Account.Profile(this.header)
+    this.user = await this.Account.GetOnce()
 
-    const locations = await this.location.Get()
-    if (locations.length < 1) { return await this.spa.Change(this.spa.pages.PlaceAdd) }
+    const locations = await this.Location.Get()
+    if (locations.length < 1) { return await this.SPA.Change(this.SPA.Pages.PlaceAdd) }
     this.currentLocationId = locations[0].id
 
-    this.airs = await this.device.Get()
-    if (this.airs.length < 1) { await this.spa.Change(this.spa.pages.Air, null, { location: this.currentLocationId }) }
+    this.airs = await this.Device.Get()
+    if (this.airs.length < 1) { await this.SPA.Change(this.SPA.Pages.Air, null, { location: this.currentLocationId }) }
 
-    //console.log(await this.booking.GetFrom('start', null, 'next'))
-    //console.log(await this.booking.GetFrom('start', null, 'prev'))
+    //console.log(await this.Booking.GetFrom('start', null, 'next'))
+    //console.log(await this.Booking.GetFrom('start', null, 'prev'))
 
     this.body.innerHTML = `
       <form id="bookingForm">
@@ -170,7 +170,7 @@ export default class extends page {
   }
 
   async ApplyBookedToCalendar() {
-    const booked = await this.booking.GetFrom('start', null, 'next')
+    const booked = await this.Booking.GetFrom('start', null, 'next')
     if (booked.length > 0) {
       booked.forEach(item => {
         this.calendar.push({
@@ -192,7 +192,7 @@ export default class extends page {
     const start = this.AdjustDate(this.today, {}, true, true)
     const end   = this.AdjustDate(this.today, { days: 6, hours: 23, minutes: 59, seconds: 59.999 }, true, true)
 
-    await fetch(`${this.api}/booking/get`, {
+    await fetch(`${this.api_root}/booking/get`, {
       method  : 'POST',
       headers : { 'Content-Type': 'application/json', Authorization: `Bearer ${this.user.token}` },
       body: JSON.stringify({
@@ -203,11 +203,11 @@ export default class extends page {
       const result = await response.json()
       const error = await new Promise(async (resolve, reject) => {
         if (result.length > 0) {
-          await this.booking.Clear('booking')
+          await this.Booking.Clear('booking')
           result.forEach(async (item, index, array) => {
-            const air     = await this.device.GetBy(item.description)
-            let booked    = await this.booking.GetOnceFrom('did', item.description)
-            if (!booked) { booked = this.booking.Schema() }
+            const air     = await this.Device.GetBy(item.description)
+            let booked    = await this.Booking.GetOnceFrom('did', item.description)
+            if (!booked) { booked = this.Booking.Schema() }
             booked.id     = item.id
             booked.did    = item.description
             booked.start  = item.start
@@ -223,7 +223,7 @@ export default class extends page {
             }
 
             this.calendar.push(item)
-            await this.booking.Put(booked)
+            await this.Booking.Put(booked)
             if (index === array.length -1) resolve()
           })
         } else { reject() }
@@ -342,7 +342,7 @@ export default class extends page {
             let lid
 
             const did = event.description
-            const air = await this.device.GetBy(did)
+            const air = await this.Device.GetBy(did)
             if (air) {
               uid = air.uid
               lid = air.lid
@@ -504,7 +504,8 @@ export default class extends page {
   }
 
   async BookingAdd(event) {
-    await fetch(`${this.api}/booking/add`, {
+    console.log(event)
+    await fetch(`${this.api_root}/booking/add`, {
       method  : 'POST',
       headers : { 'Content-Type': 'application/json', Authorization: `Bearer ${this.user.token}` },
       body: JSON.stringify(event),
@@ -516,8 +517,9 @@ export default class extends page {
       }
       if (response.ok) {
         const result  = await response.json()
-        const air     = await this.device.GetBy(result.description)
-        const booked  = this.booking.Schema()
+        console.log(result)
+        const air     = await this.Device.GetBy(result.description)
+        const booked  = this.Booking.Schema()
         booked.id     = result.id
         booked.did    = result.description
         booked.start  = result.start
@@ -532,69 +534,70 @@ export default class extends page {
           booked.lid  = 'secret'
         }
 
-        console.log(result)
         console.log(booked)
-
+        await this.Booking.Add(booked)
         this.calendar.push(result)
-        await this.booking.Add(booked)
+        document.getElementById('bookingForm').reset()
         new Notify({ head : 'ผลการจองคิว', body : 'จองคิวสำเร็จ!' })
         this.DrawDevice()
         this.DrawCalendar()
         return
       }
-      new Notify({ red: true, head : 'ผลการจองคิว', body : `เกิดข้อผิดพลาดในการจองคิว!<br/>${response.status} ${response.statusText}` })
+      new Notify({ red: true, head : 'ผลการจองคิว', body : 'เกิดข้อผิดพลาดในการจองคิว!' })
     }).catch(async error => {
-      new Notify({ red: true, head : 'ผลการจองคิว', body : `เกิดข้อผิดพลาดในการจองคิว!<br/>${error.code} ${error.message}` })
+      new Notify({ red: true, head : 'ผลการจองคิว', body : 'เกิดข้อผิดพลาดในการจองคิว!' })
       console.error('Error:', error)
     })
   }
 
   async BookingAddBatch(events) {
     console.log(events)
-    await fetch(`${this.api}/booking/batch/add`, {
+    await fetch(`${this.api_root}/booking/batch/add`, {
       method  : 'POST',
       headers : { 'Content-Type': 'application/json', Authorization: `Bearer ${this.user.token}` },
       body: JSON.stringify({ events: events }),
     }).then(async (response) => {
+      if (response.status === 409) {
+        new Notify({ red: true, head : 'ผลการจองคิว', body : 'เกิดข้อผิดพลาดในการจองคิว!<br/>มีใครบางคนจองก่อนหน้าคุณเพียงนิดเดียว<br/>คุณอาจต้องเลือกจองวันอื่นแทน' })
+        return await this.GetCalendarEvents()
+      }
       if (response.ok) {
         const result  = await response.json()
         console.log(result)
-        if (result.success) {
-          const error = await new Promise(async (resolve, reject) => {
-            result.events.forEach(async (item, index, array) => {
-              const air     = await this.device.GetBy(item.description)
-              const booked  = this.booking.Schema()
-              booked.id     = item.id
-              booked.did    = item.description
-              booked.start  = item.start
-              booked.end    = item.end
-              booked.status = item.status
+        const error = await new Promise(async (resolve, reject) => {
+          result.forEach(async (item, index, array) => {
+            const air     = await this.Device.GetBy(item.description)
+            const booked  = this.Booking.Schema()
+            booked.id     = item.id
+            booked.did    = item.description
+            booked.start  = item.start
+            booked.end    = item.end
+            booked.status = item.status
 
-              if (air) {
-                booked.uid  = air.uid
-                booked.lid  = air.lid
-              } else {
-                booked.uid  = 'secret'
-                booked.lid  = 'secret'
-              }
+            if (air) {
+              booked.uid  = air.uid
+              booked.lid  = air.lid
+            } else {
+              booked.uid  = 'secret'
+              booked.lid  = 'secret'
+            }
 
-              this.calendar.push(item)
-              await this.booking.Add(booked)
-              if (index === array.length -1) resolve()
-            })
+            this.calendar.push(item)
+            await this.Booking.Add(booked)
+            if (index === array.length -1) resolve()
           })
+        })
 
-          if (!error) {
-            new Notify({ head : 'ผลการจองคิว', body : 'จองคิวสำเร็จ!' })
-            this.DrawDevice()
-            this.DrawCalendar()
-            return
-          }
+        if (!error) {
+          new Notify({ head : 'ผลการจองคิว', body : 'จองคิวสำเร็จ!' })
+          this.DrawDevice()
+          this.DrawCalendar()
+          return
         }
       }
-      new Notify({ red: true, head : 'ผลการจองคิว', body : `เกิดข้อผิดพลาดในการจองคิว!<br/>${response.status} ${response.statusText}` })
+      new Notify({ red: true, head : 'ผลการจองคิว', body : 'เกิดข้อผิดพลาดในการจองคิว!' })
     }).catch(async error => {
-      new Notify({ red: true, head : 'ผลการจองคิว', body : `เกิดข้อผิดพลาดในการจองคิว!<br/>${error.code} ${error.message}` })
+      new Notify({ red: true, head : 'ผลการจองคิว', body : 'เกิดข้อผิดพลาดในการจองคิว!' })
       console.error('Error:', error)
     })
   }
@@ -602,24 +605,24 @@ export default class extends page {
   BookingDelete(target) {
     return async (e) => {
       e.preventDefault()
-      await fetch(`${this.api}/booking/delete`, {
+      await fetch(`${this.api_root}/booking/delete`, {
         method  : 'POST',
         headers : { 'Content-Type': 'application/json', Authorization: `Bearer ${this.user.token}` },
         body: JSON.stringify({ id: target.booked.id}),
       }).then(async (response) => {
         if (response.ok) {
           this.calendar = this.calendar.filter((item) => item.id != target.booked.id)
-          await this.booking.Delete(target.booked.id)
+          await this.Booking.Delete(target.booked.id)
           target.parentNode.removeChild(target)
           this.DrawDevice()
           this.DrawCalendar()
           new Notify({ head : 'ผลการยกเลิกคิว', body : 'ยกเลิกคิวสำเร็จ!' })
           return
         }
-        new Notify({ red: true, head : 'ผลการจองคิว', body : `เกิดข้อผิดพลาดในการยกเลิกคิว!<br/>${response.status} ${response.statusText}` })
-      }).catch(async error => {
-        new Notify({ red: true, head : 'ผลการจองคิว', body : `เกิดข้อผิดพลาดในการยกเลิกคิว!<br/>${error.code} ${error.message}` })
+        new Notify({ red: true, head : 'ผลการจองคิว', body : 'เกิดข้อผิดพลาดในการยกเลิกคิว!' })
+      }).catch(error => {
         console.error('Error:', error)
+        new Notify({ red: true, head : 'ผลการจองคิว', body : 'เกิดข้อผิดพลาดในการยกเลิกคิว!' })
       })
     }
   }

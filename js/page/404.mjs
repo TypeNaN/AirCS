@@ -1,4 +1,5 @@
 import Notify from '../notify.mjs'
+import Dialog from '../dialog.mjs'
 import page from '../page.mjs'
 
 export default class extends page {
@@ -28,6 +29,12 @@ export default class extends page {
     //parent.appendChild(this.footer)
 
     new Notify({ head : '404', body : '404 Page Not Found :(' })
+
+    new Dialog({
+      head    : '404',
+      body    : '404 Page Not Found :(',
+      accept  : { label: '✔ ไปที่หน้าหลัก' , callback: (e) => window.location.href = `${this.base}/` },
+    })
 
     //this.headName.textContent = this.title
     console.error('404 Page Not Found :(')
