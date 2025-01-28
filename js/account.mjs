@@ -49,9 +49,9 @@ export default class extends dbquery {
     const locales       = 'th'
     const state         = 'login'
     let { client_id, redirect_uri } = await this.RequestLine()
-    console.log(client_id, redirect_uri)
-    if (!client_id) return
-    redirect_uri  = `http://${window.location.hostname}:${window.location.port}/AirCS/`
+    //console.log(client_id, redirect_uri)
+    if (!client_id || !redirect_uri) return
+    //redirect_uri  = `http://${window.location.hostname}:${window.location.port}/AirCS/`
     return window.location.href = `https://access.line.me/oauth2/v2.1/authorize?ui_locales=${locales}&response_type=code&client_id=${client_id}&redirect_uri=${encodeURIComponent(redirect_uri)}&state=${state}&scope=profile%20openid`
   }
 
