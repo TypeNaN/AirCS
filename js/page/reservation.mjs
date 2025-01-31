@@ -194,7 +194,7 @@ export default class extends page {
     const start = this.AdjustDate(this.today, {}, true, true)
     const end   = this.AdjustDate(this.today, { days: 6, hours: 23, minutes: 59, seconds: 59.999 }, true, true)
 
-    await fetch(`${this.api_root}/booking/get`, {
+    await fetch(`${this.api_root}/booking/getEvents`, {
       method  : 'POST',
       headers : { 'Content-Type': 'application/json', Authorization: `Bearer ${this.user.token}` },
       body: JSON.stringify({

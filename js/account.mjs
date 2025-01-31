@@ -34,7 +34,6 @@ export default class extends dbquery {
     return await fetch(`${this.api_root}/line/clientid`, {
       method: 'GET'
     }).then(async response => {
-      console.log(response)
       if (!response.ok) return
       const result = await response.json()
       return result
