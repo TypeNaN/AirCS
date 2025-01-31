@@ -24,7 +24,7 @@ class App {
 
     this.apis = {
       v1: {
-        github: 'https://679cc8d658c2c3055bbd7cbc--aircs.netlify.app/.netlify/functions/v1'
+        github: 'https://679cde29b98bc900658146ac--aircs.netlify.app/.netlify/functions/v1'
       }
     }
 
