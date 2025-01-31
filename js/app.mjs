@@ -24,9 +24,7 @@ class App {
 
     this.apis = {
       v1: {
-        localhost: this.base,
-        netlify: 'http://localhost:8888/.netlify/functions/v1',
-        github: 'https://6798d5c2534a5e3513c38a6c--aircs.netlify.app/.netlify/functions/v1'
+        github: 'https://679cc8d658c2c3055bbd7cbc--aircs.netlify.app/.netlify/functions/v1'
       }
     }
 

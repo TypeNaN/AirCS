@@ -91,7 +91,7 @@ export default class {
     this.body.style.minHeight = '70px'
     this.body.style.maxHeight = '495px'
     //this.body.style.height = 'clamp(70px, calc(100% - 94px), 495px)'
-    this.body.style.padding = '5px'
+    this.body.style.padding = '20px 5px'
     this.body.style.borderRadius = '5px 5px 0 0'
     this.body.style.textWrap = 'balance'
     this.body.style.overflowX = 'hidden'

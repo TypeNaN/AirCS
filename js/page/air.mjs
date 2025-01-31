@@ -19,6 +19,8 @@ export default class extends page {
     this.Location  = app.Location
     this.Device    = app.Device
 
+    this.AirSync()
+
   }
 
   Destroy() { super.Destroy() }
@@ -174,7 +176,6 @@ export default class extends page {
           body    : editing,
           accept  : { label: '✔ บันทึก' , callback: await this.AirEdit(dev, query) },
           cancel  : { label: '✘ ทิ้ง'   , callback: e => {
-            console.log('ทิ้ง')
             new Notify({ head: 'ผลการบันทึก', body: 'บันทึกแอร์สำเร็จ คุณสามารถเพิ่มแอร์ได้ต่อเนื่องหากมีอีก' })
           }}
         })
@@ -269,4 +270,27 @@ export default class extends page {
       })
     }
   }
+
+  async AirSync() {
+    const user = await this.Account.GetOnce()
+    if (!user) return
+    if (this.Account.isExptre(user)) return
+
+    await fetch(`${this.api_root}/device/get`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${user.token}` },
+    }).then(async (response) => {
+      if (response.ok) {
+        const result = await response.json()
+        await this.Device.Clear('device')
+        for (const item of result) {
+          await this.Device.Put(item)
+        }
+      }
+    }).catch(error => {
+      new Notify({ head : 'Sync', body : 'เกิดข้อผิดพลาดในการ Sync เครื่องปรับอากาศ!' })
+      console.error('Error:', error)
+    })
+  }
+
 }

@@ -21,7 +21,7 @@ export default class {
     this.dom = document.createElement( 'div' )
     this.dom.style.position = 'relative'
     this.dom.style.width = 'clamp(400px, 70%, 600px)'
-    this.dom.style.minHeight = '60px'
+    this.dom.style.minHeight = '70px'
     this.dom.style.margin = '0 auto 2px auto'
     this.dom.style.padding = '5px'
     this.dom.style.lineHeight = '20px'
@@ -59,7 +59,7 @@ export default class {
     this.desc.style.minHeight = '30px'
     this.desc.style.maxHeight = '280px'
     this.desc.style.padding = '5px'
-    this.desc.style.margin = '20px auto'
+    //this.desc.style.margin = '5px auto'
     this.desc.style.borderRadius = '5px 5px 0 0'
     this.desc.style.textWrap = 'balance'
     this.desc.style.opacity = 0

@@ -45,6 +45,8 @@ export default class extends page {
     this.currentDayIndex    = null
     this.currentHourIndex   = null
 
+    this.BookingSync()
+
   }
 
   async Render(params, query) {
@@ -625,6 +627,46 @@ export default class extends page {
         new Notify({ red: true, head : 'ผลการจองคิว', body : 'เกิดข้อผิดพลาดในการยกเลิกคิว!' })
       })
     }
+  }
+
+  async BookingSync() {
+    const user = await this.Account.GetOnce()
+    if (!user) return
+    if (this.Account.isExptre(user)) return
+
+    await fetch(`${this.api_root}/booking/get`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${user.token}` },
+    }).then(async (response) => {
+      if (response.ok) {
+        const result = await response.json()
+        await this.Booking.Clear('booking')
+        for (const item of result) {
+          const air     = await this.Device.GetBy(item.description)
+          let booked    = await this.Booking.GetOnceFrom('did', item.description)
+          if (!booked) { booked = this.Booking.Schema() }
+          booked.id     = item.id
+          booked.did    = item.description
+          booked.start  = item.start
+          booked.end    = item.end
+          booked.status = item.status
+
+          if (air) {
+            booked.uid  = air.uid
+            booked.lid  = air.lid
+          } else {
+            booked.uid  = 'secret'
+            booked.lid  = 'secret'
+          }
+
+          this.calendar.push(item)
+          await this.Booking.Put(booked)
+        }
+      }
+    }).catch(error => {
+      new Notify({ head : 'Sync', body : 'เกิดข้อผิดพลาดในการ Sync ปฏิทินจองคิว!' })
+      console.error('Error:', error)
+    })
   }
 
 }

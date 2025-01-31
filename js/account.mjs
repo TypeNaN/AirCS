@@ -49,9 +49,7 @@ export default class extends dbquery {
     const locales       = 'th'
     const state         = 'login'
     let { client_id, redirect_uri } = await this.RequestLine()
-    //console.log(client_id, redirect_uri)
     if (!client_id || !redirect_uri) return
-    //redirect_uri  = `http://${window.location.hostname}:${window.location.port}/AirCS/`
     return window.location.href = `https://access.line.me/oauth2/v2.1/authorize?ui_locales=${locales}&response_type=code&client_id=${client_id}&redirect_uri=${encodeURIComponent(redirect_uri)}&state=${state}&scope=profile%20openid`
   }
 
@@ -76,6 +74,17 @@ export default class extends dbquery {
       console.error('Error RequestLogin:', error)
       return
     })
+  }
+
+  isExptre(user) {
+    const calc = (user.expire * 1000) - Date.now()
+    return calc > 0 ? false : true
+  }
+
+  async NotExptre() {
+    const user = await this.GetOnce()
+    if (!user) return -1
+    return (user.expire * 1000) - Date.now()
   }
 
   async RequestRefresh() {
@@ -152,7 +161,7 @@ export default class extends dbquery {
 
   async Profile(parent) {
     const user = await this.GetOnce()
-    if (!user) return window.location.href = '/Aircs/'
+    if (!user) return
 
     this.RequestRefresh()
 
@@ -195,13 +204,11 @@ export default class extends dbquery {
           if (countdown == 'Expired') {
             console.log(countdown)
             clearInterval(ti)
-            //window.location.href = '/'
           }
         }
         catch (error) {
           console.error(error)
           clearInterval(ti)
-          //window.location.href = '/'
         }
       }, 1000)
 

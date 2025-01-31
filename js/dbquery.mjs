@@ -28,6 +28,7 @@ export default class {
     data.modified = this._now()
     return await this._rw.Put(data)
   }
+
   async Add(data) { return await this._rw.Add(data) }
   async Delete(value, sort) { return await this._rw.Delete(value, sort) }
   async Clear(store) { return await this._rw.Clear(store) }

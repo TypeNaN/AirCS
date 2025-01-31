@@ -1,7 +1,6 @@
 import Notify from '../notify.mjs'
 import Dialog from '../dialog.mjs'
 import page   from '../page.mjs'
-import booking from '../booking.mjs'
 
 export default class extends page {
   constructor(app) {
@@ -18,6 +17,8 @@ export default class extends page {
     this.Location = app.Location
     this.Device   = app.Device
     this.Booking  = app.Booking
+
+    this.PlaceSync()
   }
 
   Destroy() { super.Destroy() }
@@ -316,6 +317,27 @@ export default class extends page {
     })
   }
 
+  async PlaceSync() {
+    const user = await this.Account.GetOnce()
+    if (!user) return
+    if (this.Account.isExptre(user)) return
+
+    await fetch(`${this.api_root}/location/get`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${user.token}` },
+    }).then(async (response) => {
+      if (response.ok) {
+        const result = await response.json()
+        await this.Location.Clear('location')
+        for (const item of result) {
+          await this.Location.Add(item)
+        }
+      }
+    }).catch(error => {
+      new Notify({ head : 'Sync', body : 'เกิดข้อผิดพลาดในการ Sync สถานที่!' })
+      console.error('Error:', error)
+    })
+  }
 
   HandlerNoLocation() {
     return new Dialog({
