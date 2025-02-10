@@ -318,9 +318,8 @@ export default class extends page {
   }
 
   async PlaceSync() {
-    const user = await this.Account.GetOnce()
+    const user = await this.Account.isAlive()
     if (!user) return
-    if (this.Account.isExptre(user)) return
 
     await fetch(`${this.api_root}/location/get`, {
       method: 'POST',
@@ -328,7 +327,7 @@ export default class extends page {
     }).then(async (response) => {
       if (response.ok) {
         const result = await response.json()
-        await this.Location.Clear('location')
+        await this.Location.Clear()
         for (const item of result) {
           await this.Location.Add(item)
         }

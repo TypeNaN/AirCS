@@ -38,17 +38,14 @@ export default class extends Page {
 
     document.getElementById('checkLogin').onclick = async (e) => {
       e.preventDefault()
-      let user = await this.Account.GetOnce()
-      if (user) {
-        if ((user.expire * 1000) - Date.now() > 0) {
-          window.history.replaceState(null, '', `${this.base}/`)
-          return await this.SPA.Change(this.SPA.Pages.Place)
-        }
-        new Notify({ head : 'User expire', body : "Let's login." })
-        return setTimeout(async () => { return await this.Account.RequestAuthorize() }, 1000)
-      } else {
+      const user = await this.Account.GetOnce()
+      if (!user) {
         new Notify({ head : 'Request Authorize', body : "Let's login." })
-        return setTimeout(async () => { return await this.Account.RequestAuthorize() }, 1000)
+        return setTimeout(() => { return this.Account.RequestAuthorize() }, 1000)
+      } else {
+        document.body.innerHTML = ''
+        window.history.replaceState(null, '', `${this.base}/`)
+        return this.SPA.Change(this.SPA.Pages.Place)
       }
     }
   }

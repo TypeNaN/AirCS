@@ -29,31 +29,22 @@ export default class extends dbquery {
     return data
   }
 
-  async RequestLine() {
-    //console.log('RequestLine')
-    return await fetch(`${this.api_root}/line/clientid`, {
-      method: 'GET'
-    }).then(async response => {
-      if (!response.ok) return
-      const result = await response.json()
-      return result
+  async RequestAuthorize() {
+    fetch(`${this.api_root}/line/authorize`, {
+      method  : 'GET',
+    }).then(async (response) => {
+      if (response.ok) {
+        const result = await response.json()
+        if (result.endpoint) {
+          return window.location.href = result.endpoint
+        }
+      }
     }).catch(error => {
-      console.error('Error request line client id!', error)
-      return
+      console.error('Error RequestAuthorize:', error)
     })
   }
 
-  async RequestAuthorize() {
-    //console.log('RequestCode')
-    const locales       = 'th'
-    const state         = 'login'
-    let { client_id, redirect_uri } = await this.RequestLine()
-    if (!client_id || !redirect_uri) return
-    return window.location.href = `https://access.line.me/oauth2/v2.1/authorize?ui_locales=${locales}&response_type=code&client_id=${client_id}&redirect_uri=${encodeURIComponent(redirect_uri)}&state=${state}&scope=profile%20openid`
-  }
-
   async RequestLogin(code) {
-    //console.log('RequestLogin')
     return await fetch(`${this.api_root}/user/login`, {
       method  : 'POST',
       headers : { 'Content-Type': 'application/json' },
@@ -75,12 +66,14 @@ export default class extends dbquery {
     })
   }
 
-  isExptre(user) {
+  async isAlive() {
+    const user = await this.GetOnce()
+    if (!user) return false
     const calc = (user.expire * 1000) - Date.now()
-    return calc > 0 ? false : true
+    return calc > 0 ? user : false
   }
 
-  async NotExptre() {
+  async TimeLeft() {
     const user = await this.GetOnce()
     if (!user) return -1
     return (user.expire * 1000) - Date.now()
@@ -107,6 +100,7 @@ export default class extends dbquery {
         method  : 'POST',
         headers : { 'Content-Type': 'application/json', Authorization: `Bearer ${user.token}` },
       }).then(async (response) => {
+        if (response.status !== 200) return
         if (response.ok) {
           const result = await response.json()
           user.token    = result.token
@@ -114,6 +108,8 @@ export default class extends dbquery {
           user.modified = this._now()
           this.Put(user)
           this._isRefreshing = false
+          clearTimeout(this._Refresher)
+          this._Refresher = null
           this.RequestRefresh()
         }
       }).catch(error => {
@@ -139,7 +135,7 @@ export default class extends dbquery {
     })
   }
 
-  TimeLeft(expire) {
+  DrawTimeLeft(expire) {
     const now = Date.now()
     const millisecondsLeft = (expire * 1000) - now
     if (millisecondsLeft <= 0) { return 'Expired' }
@@ -196,16 +192,16 @@ export default class extends dbquery {
         logout.style.display = ((!logoutDisplay || logoutDisplay == 'none') ? 'block' : 'none')
       }
 
-      const ti = setInterval(() => {
+      const ti = setInterval(async () => {
         try {
+          user = await this.GetOnce()
           const countdown = this.TimeLeft(user.expire)
           document.getElementById('profile-expire').innerText = countdown
           if (countdown == 'Expired') {
             console.log(countdown)
             clearInterval(ti)
           }
-        }
-        catch (error) {
+        } catch (error) {
           console.error(error)
           clearInterval(ti)
         }

@@ -272,9 +272,8 @@ export default class extends page {
   }
 
   async AirSync() {
-    const user = await this.Account.GetOnce()
+    const user = await this.Account.isAlive()
     if (!user) return
-    if (this.Account.isExptre(user)) return
 
     await fetch(`${this.api_root}/device/get`, {
       method: 'POST',
@@ -282,7 +281,7 @@ export default class extends page {
     }).then(async (response) => {
       if (response.ok) {
         const result = await response.json()
-        await this.Device.Clear('device')
+        await this.Device.Clear()
         for (const item of result) {
           await this.Device.Put(item)
         }
