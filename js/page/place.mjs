@@ -227,7 +227,6 @@ export default class extends page {
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${user.token}` },
         body: JSON.stringify({ data: id })
       }).then(async (response) => {
-        console.log(response)
         await this.Location.Delete(id)
         this.body.innerHTML = ''
         const locations = await this.Location.Get()
@@ -271,7 +270,6 @@ export default class extends page {
     }).then(async (response) => {
       if (response.ok) {
         const result = await response.json()
-        console.log(result)
         const data = result.map(item => { if (item.deletedCount > 0) return item.search.did } )
         const deleted = await this.Device.Delete(data)
         new Notify({ head : 'ผลการลบ', body : `ลบเครื่องปรับอากาศสำเร็จ!<br/>จำนวน: ${deleted.length} เครื่อง` })
@@ -298,10 +296,8 @@ export default class extends page {
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${user.token}` },
       body: JSON.stringify({ events: bookings })
     }).then(async (response) => {
-      console.log(response)
       if (response.ok) {
         const result = await response.json()
-        console.log(result)
         const data = result.results.map(item => { if (item.deleted) return item.id } )
         const deleted = await this.Booking.Delete(data)
         new Notify({ head : 'ผลการลบ', body : `ลบคิวที่จองไว้สำเร็จ!<br/>จำนวน: ${deleted.length} รายการ` })
@@ -343,7 +339,7 @@ export default class extends page {
       head    : `ไม่พบสถานที่`,
       body    : 'ไม่พบสถานที่ หรือสถานที่อาจถูกลบไปแล้ว',
       accept  : { label: '✔ เพิ่มสถานที่' , callback: async (e) => await this.SPA.Change(this.SPA.Pages.PlaceAdd) },
-      cancel  : { label: '✘ ปิด'       , callback: () => console.log('ยกเลิก') },
+      cancel  : { label: '✘ ปิด'       , callback: () => false },
     })
   }
 

@@ -127,7 +127,7 @@ export default class {
           }
         })
       },
-      Clear: async (store) => {
+      Clear: async () => {
         return await new Promise((resolve, reject) => {
           const transaction   = this._db.transaction(store, 'readwrite')
           const objectStore   = transaction.objectStore(store)
