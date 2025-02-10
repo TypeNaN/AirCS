@@ -130,7 +130,7 @@ export default class extends dbquery {
       return window.location.href = '/AirCS/'
     }).catch(async error => {
       console.error('Error:', error)
-      await this.Delete(user.id)
+      await this.Clear()
       return window.location.href = '/AirCS/'
     })
   }
@@ -140,22 +140,14 @@ export default class extends dbquery {
     const millisecondsLeft = (expire * 1000) - now
     if (millisecondsLeft <= 0) { return 'Expired' }
     let remaining = millisecondsLeft / 1000 // แปลงเป็นวินาที
-    //const years = Math.floor(remaining / (365 * 24 * 60 * 60))
-    //remaining %= 365 * 24 * 60 * 60
-    //const months = Math.floor(remaining / (30 * 24 * 60 * 60))
-    //remaining %= 30 * 24 * 60 * 60
-    //const days = Math.floor(remaining / (24 * 60 * 60))
-    //remaining %= 24 * 60 * 60
-    //const hours = Math.floor(remaining / (60 * 60))
     remaining %= 60 * 60
     const minutes = Math.floor(remaining / 60)
     const seconds = Math.floor(remaining % 60)
-    //return `${years} ปี / ${months} เดือน / ${days} วัน / ${hours} ชั่วโมง / ${minutes} นาที / ${seconds} วินาที`
     return `${minutes}:${seconds}`
   }
 
   async Profile(parent) {
-    const user = await this.GetOnce()
+    let user = await this.GetOnce()
     if (!user) return
 
     this.RequestRefresh()
@@ -178,7 +170,7 @@ export default class extends dbquery {
 
       const expire = document.createElement('div')
       expire.id = 'profile-expire'
-      expire.innerText = this.TimeLeft(user.expire)
+      expire.innerText = this.DrawTimeLeft(user.expire)
       container.appendChild(expire)
 
       const logout = document.createElement('button')
@@ -195,7 +187,7 @@ export default class extends dbquery {
       const ti = setInterval(async () => {
         try {
           user = await this.GetOnce()
-          const countdown = this.TimeLeft(user.expire)
+          const countdown = this.DrawTimeLeft(user.expire)
           document.getElementById('profile-expire').innerText = countdown
           if (countdown == 'Expired') {
             console.log(countdown)
