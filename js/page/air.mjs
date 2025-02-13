@@ -110,37 +110,15 @@ export default class extends page {
         const airName     = document.createElement('input')
         const airDetail   = document.createElement('input')
 
+        this.RenderAirType(airType, device.type)
+        this.RenderAirBTU(airBtu, device.type, device.btu)
+        this.RenderAirCoolant(airCoolant, device.coolant)
+
         airType.value     = device.type
         airBtu.value      = device.btu
         airCoolant.value  = device.coolant
         airName.value     = device.name
         airDetail.value   = device.detail
-
-        airType.innerHTML = device_props.type.map((item, index, array) => {
-          if (index === device.type) {
-            if (item.disabled) return `<option value="${index}" selected disabled>${item.name}</option>`
-            return `<option value="${index}" selected>${item.name}</option>`
-          } else {
-            if (item.disabled) return `<option value="${index}" disabled>${item.name}</option>`
-            return `<option value="${index}">${item.name}</option>`
-          }
-        }).join('')
-
-        airBtu.innerHTML = device_props.btu.map((item, index, array) => {
-          if (index === device.btu) {
-            return `<option value="${index}" selected>${item.name}</option>`
-          } else {
-            return `<option value="${index}">${item.name}</option>`
-          }
-        }).join('')
-
-        airCoolant.innerHTML = device_props.coolant.map((item, index, array) => {
-          if (index === device.btu) {
-            return `<option value="${index}" selected>${item.name}</option>`
-          } else {
-            return `<option value="${index}">${item.name}</option>`
-          }
-        }).join('')
 
         editing.appendChild(form)
         form.appendChild(airType)
@@ -199,6 +177,45 @@ export default class extends page {
     addAir.onclick = async (e) => {
       return await this.SPA.Change(this.SPA.Pages.AirAdd, null, { location: query.location })
     }
+  }
+
+  RenderAirType(container, selected) {
+    container.innerHTML = ''
+    device_props.type.map((item, index) => {
+      let ops = ''
+      if (index === selected) {
+        if (item.disabled) ops += `<option value="${index}" selected disabled>${item.name}</option>`
+        else ops += `<option value="${index}" selected>${item.name}</option>`
+      } else {
+        if (item.disabled) ops += `<option value="${index}" disabled>${item.name}</option>`
+        else ops += `<option value="${index}">${item.name}</option>`
+      }
+      container.innerHTML += ops
+    })
+  }
+
+  RenderAirBTU(container, type, selected) {
+    console.log(type, selected)
+    container.innerHTML = ''
+    device_props.type[type].btu.map((item, index) => {
+      let ops = ''
+      if (index === selected)  ops += `<option value="${index}" selected>${item.name}</option>`
+      else ops += `<option value="${index}">${item.name}</option>`
+      container.innerHTML += ops
+    })
+  }
+
+  RenderAirCoolant(container, selected) {
+    container.innerHTML = ''
+    device_props.coolant.map((item, index) => {
+      let ops = ''
+      if (index === selected) {
+        ops += `<option value="${index}" selected>${item.name}</option>`
+      } else {
+        ops += `<option value="${index}">${item.name}</option>`
+      }
+      container.innerHTML += ops
+    })
   }
 
   HandlerNoLocation() {
