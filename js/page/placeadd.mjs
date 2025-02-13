@@ -41,7 +41,7 @@ export default class extends page {
     parent.appendChild(this.body)
     parent.appendChild(this.footer)
 
-    this.Account.Profile(this.header)
+    await this.Account.Profile(this.header)
 
     //new Notify({
     //  still: true,

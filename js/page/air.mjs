@@ -33,7 +33,7 @@ export default class extends page {
     parent.appendChild(this.body)
     parent.appendChild(this.footer)
 
-    this.Account.Profile(this.header)
+    await this.Account.Profile(this.header)
 
     //new Notify({ head : 'WELCOME', body : 'Welcome to Professional Aircon Cleaning Service.' })
 
@@ -175,7 +175,7 @@ export default class extends page {
           head    : 'แก้ไขรายละเอียดของตัวแอร์',
           body    : editing,
           accept  : { label: '✔ บันทึก' , callback: await this.AirEdit(dev, query) },
-          cancel  : { label: '✘ ทิ้ง'   , callback: null }
+          cancel  : { label: '✘ ทิ้ง'   , callback: e => false }
         })
 
       }
@@ -186,7 +186,7 @@ export default class extends page {
           head: 'ลบแอร์',
           body: `ทำการลบแอร์ ${device.name} ออกจากรายการ`,
           accept: { label: '✔ ลบเลย', callback: await this.AirDelete(device.id, query) },
-          cancel: { label: '✘ ยกเลิก', callback: null },
+          cancel: { label: '✘ ยกเลิก', callback: e => false },
         })
       }
 

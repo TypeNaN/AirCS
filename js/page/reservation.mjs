@@ -57,7 +57,7 @@ export default class extends page {
     parent.appendChild(this.body)
     parent.appendChild(this.footer)
 
-    this.Account.Profile(this.header)
+    await this.Account.Profile(this.header)
     this.user = await this.Account.GetOnce()
 
     const locations = await this.Location.Get()
@@ -463,7 +463,7 @@ export default class extends page {
               head    : 'ยกเลิก',
               body    : 'ยกเลิกการจองนี้หรือไม่!',
               accept  : { label: '✔ ยกเลิกเลย' , callback: this.BookingDelete(target) },
-              cancel  : { label: '✘ เก็บไว้'   , callback: (e) => console.log('เก็บไว้') },
+              cancel  : { label: '✘ เก็บไว้'   , callback: e => false },
             })
 
           } else {

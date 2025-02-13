@@ -29,7 +29,7 @@ export default class extends page {
     parent.appendChild(this.body)
     parent.appendChild(this.footer)
 
-    this.Account.Profile(this.header)
+    await this.Account.Profile(this.header)
 
     this.body.innerHTML = `
       <form id="addingForm">

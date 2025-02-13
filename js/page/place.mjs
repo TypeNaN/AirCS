@@ -31,7 +31,7 @@ export default class extends page {
     parent.appendChild(this.body)
     parent.appendChild(this.footer)
 
-    this.Account.Profile(this.header)
+    await this.Account.Profile(this.header)
 
     //new Notify({ head : 'WELCOME', body : 'Welcome to Professional Aircon Cleaning Service.' })
 
@@ -162,7 +162,7 @@ export default class extends page {
           head    : 'แก้ไขสถานที่',
           body    : editing,
           accept  : { label: '✔ บันทึก' , callback: await this.PlaceEdit(loc) },
-          cancel  : { label: '✘ ทิ้ง'   , callback: null },
+          cancel  : { label: '✘ ทิ้ง'   , callback: e => false },
         })
       }
 
@@ -173,7 +173,7 @@ export default class extends page {
           head    : 'ลบสถานที่',
           body    : `ทำการลบสถานที่ ${location.place} อาคารเลขที่ ${location.number} ออกจากรายการ<br/>เครื่องปรับอากาศที่เพิ่มไว้ในสถานที่นี้จะถูกลบไปด้วยทั้งหมด<br/>การจองคิวทั้งหมดที่เครื่องปรับอากาศนั้นได้จองไว้ก็จะถูกยกเลิกด้วยเช่นกัน`,
           accept  : { label: '✔ ลบเลย', callback: await this.PlaceDelete(location.id) },
-          cancel  : { label: '✘ ยกเลิก', callback: null },
+          cancel  : { label: '✘ ยกเลิก', callback: e => false },
         })
       }
     })
@@ -366,7 +366,7 @@ export default class extends page {
       head    : `ไม่พบสถานที่`,
       body    : 'ไม่พบสถานที่ หรือสถานที่อาจถูกลบไปแล้ว',
       accept  : { label: '✔ เพิ่มสถานที่' , callback: async (e) => await this.SPA.Change(this.SPA.Pages.PlaceAdd) },
-      cancel  : { label: '✘ ปิด'       , callback: null },
+      cancel  : { label: '✘ ปิด'       , callback: e => false },
     })
   }
 
