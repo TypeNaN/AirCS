@@ -64,7 +64,7 @@ export default class extends page {
         <label>ชื่อ:</label><div id="name-${device.id}" class="device-name">${device.name}</div>
         <label>รายละเอียด:</label> <div id="desc-${device.id}" class="device-detail">${device.detail}</div>
         <label>ประเภท:</label> <div id="type-${device.id}" class="device-type">${device_props.type[device.type].name}</div>
-        <label>ขนาด:</label> <div id="btu-${device.id}" class="device-btu">${device_props.btu[device.btu].name}</div>
+        <label>ขนาด:</label> <div id="btu-${device.id}" class="device-btu">${device_props.type[device.type].btu[device.btu].name}</div>
         <label>น้ำยา:</label> <div id="coolant-${device.id}" class="device-coolant">${device_props.coolant[device.coolant].name}</div>
         <label>ล้างครั้งล่าสุด:</label> <div id="last-${device.id}" class="device-last">${device.last || 'ยังไม่เคยล้าง'}</div>
         <div class="location-footer">
