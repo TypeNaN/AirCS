@@ -463,3 +463,45 @@ ul {
   color:#fff;
   background-color:#0075ff;
 }
+.quote-container {
+  width:100%;
+  margin:auto;
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+    font-size: 0.9rem;
+  }
+  th, td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: center;
+  }
+  th {
+    background: #00c300;
+    color: white;
+  }
+  .total-price {
+    font-weight: bold;
+    font-size: 1.1rem;
+    color: #d9534f;
+    padding: 10px;
+    margin-top: 10px;
+    background: #fff3f3;
+    border-radius: 5px;
+  }
+  #booking-date-start {
+    margin-top: 10px;
+  }
+  .booking-date {
+    text-align: right;
+    font-weight: bold;
+    font-size: 1.1rem;
+    color: #d9534f;
+    padding: 10px;
+    background: #fff3f3;
+    border-radius: 5px;
+
+  }
+}
+

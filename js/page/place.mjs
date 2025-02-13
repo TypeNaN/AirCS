@@ -362,12 +362,16 @@ export default class extends page {
   }
 
   HandlerNoLocation() {
-    return new Dialog({
+    const div = document.createElement('div')
+    div.innerHTML = `<button id="syncButton">Sync ข้อมูล</button>`
+    const dialog = new Dialog({
       head    : `ไม่พบสถานที่`,
-      body    : 'ไม่พบสถานที่ หรือสถานที่อาจถูกลบไปแล้ว',
+      body    : `ไม่พบสถานที่ หรือสถานที่อาจถูกลบไปแล้ว<br>หากเคยเพิ่มไว้แล้วในอุปกรณ์เครื่องอื่นลอง<br/>${div.innerHTML}`,
       accept  : { label: '✔ เพิ่มสถานที่' , callback: async (e) => await this.SPA.Change(this.SPA.Pages.PlaceAdd) },
       cancel  : { label: '✘ ปิด'       , callback: e => false },
     })
+    document.getElementById('syncButton').onclick = () => window.location.href = this.base
+    return dialog
   }
 
 }

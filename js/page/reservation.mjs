@@ -207,7 +207,7 @@ export default class extends page {
     const user = await this.Account.isAlive()
     if (!user) return
 
-    const start = this.AdjustDate(this.today, {})
+    const start = this.AdjustDate(this.today, { days: -1 })
     const end   = this.AdjustDate(this.today, { days: 6, hours: 23, minutes: 59, seconds: 59.999 })
 
     await fetch(`${this.api_root}/booking/getEvents`, {
@@ -508,7 +508,7 @@ export default class extends page {
           const start = this.AdjustDate(this.today, { days: reserv.day, hours: reserv.start } )
           const end   = this.AdjustDate(this.today, { days: reserv.day, hours: reserv.end } )
           const event = {
-            summary     : 'นัดหมายใหม่',
+            summary     : this.FormatNotify(start),
             description : reserv.did,
             start       : this.FormatAddCalendar(start),
             end         : this.FormatAddCalendar(end),
@@ -516,48 +516,45 @@ export default class extends page {
           events.push(event)
         })
 
-        console.log('events', events.length)
         await this.BookingPrice(events)
       }
     }
   }
 
   async BookingPrice(events) {
-    console.log(events)
-
     let total = 0
-    const pricing = document.createElement('div')
-    pricing.style.width = '100%'
-    pricing.innerHTML = `
+    const quote = document.createElement('div')
+    quote.className = 'quote-container'
+    quote.innerHTML = `
       <table>
         <thead>
           <tr>
-            <td>ประเภท</td>
-            <td>ขนาด BTU</td>
-            <td>น้ำยา</td>
-            <td>ราคา</td>
+            <th>ชื่อ</th>
+            <th>ประเภท</th>
+            <th>ขนาด BTU</th>
+            <th>ราคา</th>
           </tr>
         </thead>
-        <tbody id="list">
-        </tbody>
+        <tbody id="quote-list"></tbody>
       </table>
-      <div>
-      <div>รวมราคา: </div>
-      <div id="total"></div>
-      </div>
+      <div id="total-price" class="total-price"></div>
+      <div id="booking-date-start" class="booking-date">จอง ${this.FormatNotify(events[0].start.dateTime)}</div>
+      <div id="booking-date-end" class="booking-date"></div>
     `
 
-    events.forEach(async event => {
+    console.log(this.period)
+    console.log(this.needClean)
+    events.forEach(async (event, index) => {
       const device = await this.Device.GetBy(event.description)
       const price  = device_props.type[device.type].btu[device.btu].price
       total += price
-      document.getElementById('total').innerText = total
-      document.getElementById('list').innerHTML += `
+      document.getElementById('booking-date-end').innerText = `ถึง ${this.FormatNotify(event.end.dateTime)}`
+      document.getElementById('total-price').innerText = `รวม ${total} บาท`
+      document.getElementById('quote-list').innerHTML += `
         <tr>
+          <td>${this.needClean[index].name}</td>
           <td>${device_props.type[device.type].name}</td>
           <td>${device_props.type[device.type].btu[device.btu].name}</td>
-          <td>${device_props.coolant[device.coolant].name}</td>
-          <td>${device.last || 'ยังไม่เคยล้าง'}</td>
           <td>${price}</td>
         </tr>
       `
@@ -567,7 +564,6 @@ export default class extends page {
       head    : 'ตรวจสอบรายละเอียด',
       body    : pricing,
       accept  : { label: '✔ จอง', callback: () => {
-        console.log('จอง')
         if (events.length === 1) this.BookingAdd(events[0])
         else this.BookingAddBatch(events)
       } },
@@ -601,9 +597,10 @@ export default class extends page {
     }).then(async (response) => {
       if (response.status === 409) {
         new Notify({ red: true, head : 'ผลการจองคิว', body : 'เกิดข้อผิดพลาดในการจองคิว!<br/>มีใครบางคนจองก่อนหน้าคุณเพียงนิดเดียว<br/>คุณอาจต้องเลือกจองวันอื่นแทน' })
+        await this.GetCalendarEvents()
         let loading = document.getElementById('now-loading')
         if (loading) loading.remove()
-        return await this.GetCalendarEvents()
+        return
       }
       if (response.ok) {
         const result  = await response.json()
@@ -659,9 +656,10 @@ export default class extends page {
     }).then(async (response) => {
       if (response.status === 409) {
         new Notify({ red: true, head : 'ผลการจองคิว', body : 'เกิดข้อผิดพลาดในการจองคิว!<br/>มีใครบางคนจองก่อนหน้าคุณเพียงนิดเดียว<br/>คุณอาจต้องเลือกจองวันอื่นแทน' })
+        await this.GetCalendarEvents()
         let loading = document.getElementById('now-loading')
         if (loading) loading.remove()
-        return await this.GetCalendarEvents()
+        return
       }
       if (response.ok) {
         const result  = await response.json()
@@ -753,8 +751,8 @@ export default class extends page {
     const user = await this.Account.isAlive()
     if (!user) return
 
-    const start = this.AdjustDate(this.today, {}, true, true)
-    const end   = this.AdjustDate(this.today, { days: 6, hours: 23, minutes: 59, seconds: 59.999 }, true, true)
+    const start = this.AdjustDate(this.today, { days: -1 })
+    const end   = this.AdjustDate(this.today, { days: 6, hours: 23, minutes: 59, seconds: 59.999 })
 
     await fetch(`${this.api_root}/booking/get`, {
       method: 'POST',
