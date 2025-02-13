@@ -73,9 +73,14 @@ export default class {
     this.x.onmouseleave = (e) => { e.target.style.color = '#f63' }
     this.x.onmouseover = (e) => { e.target.style.color = '#f00' }
 
+    this.onX = arguments[0].x
+
     this.x.onclick = () => {
       if ( !this.x.disabled ) {
         this.x.disabled = true
+        if (typeof this.onX !== 'undefined') {
+          this.onX()
+        }
         this.remove()
       }
     }

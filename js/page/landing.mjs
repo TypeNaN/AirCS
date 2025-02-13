@@ -38,12 +38,12 @@ export default class extends Page {
 
     document.getElementById('checkLogin').onclick = async (e) => {
       e.preventDefault()
+      document.body.innerHTML = ''
       const user = await this.Account.GetOnce()
       if (!user) {
         new Notify({ head : 'Request Authorize', body : "Let's login." })
         return setTimeout(() => { return this.Account.RequestAuthorize() }, 1000)
       } else {
-        document.body.innerHTML = ''
         window.history.replaceState(null, '', `${this.base}/`)
         return this.SPA.Change(this.SPA.Pages.Place)
       }

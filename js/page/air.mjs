@@ -175,9 +175,7 @@ export default class extends page {
           head    : 'แก้ไขรายละเอียดของตัวแอร์',
           body    : editing,
           accept  : { label: '✔ บันทึก' , callback: await this.AirEdit(dev, query) },
-          cancel  : { label: '✘ ทิ้ง'   , callback: e => {
-            new Notify({ head: 'ผลการบันทึก', body: 'บันทึกแอร์สำเร็จ คุณสามารถเพิ่มแอร์ได้ต่อเนื่องหากมีอีก' })
-          }}
+          cancel  : { label: '✘ ทิ้ง'   , callback: null }
         })
 
       }
@@ -188,7 +186,7 @@ export default class extends page {
           head: 'ลบแอร์',
           body: `ทำการลบแอร์ ${device.name} ออกจากรายการ`,
           accept: { label: '✔ ลบเลย', callback: await this.AirDelete(device.id, query) },
-          cancel: { label: '✘ ยกเลิก', callback: (e) => console.log('ยกเลิก') },
+          cancel: { label: '✘ ยกเลิก', callback: null },
         })
       }
 
@@ -223,8 +221,18 @@ export default class extends page {
 
   async AirEdit(device, query) {
     return async (e) => {
-      const user = await this.Account.GetOnce()
+
+      const user = await this.Account.isAlive()
       if (!user) return
+
+      let loading = document.getElementById('now-loading')
+      if (!loading) {
+        loading = document.createElement('div')
+        loading.id = 'now-loading'
+        loading.className = 'now-loading'
+        loading.innerHTML = '<h1>Now Loading....</h1>'
+      }
+
       return await fetch(`${this.api_root}/device/patch`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${user.token}` },
@@ -236,9 +244,13 @@ export default class extends page {
         if (devices.length < 1) { return this.HandlerNoDevice(query.location) }
         await this.DrawDevices(devices, query)
         new Notify({ head : 'ผลการบันทึก', body : 'บันทึกสถานที่สำเร็จ!' })
+        let loading = document.getElementById('now-loading')
+        if (loading) loading.remove()
       }).catch(async error => {
         console.error(error)
-        new Notify({ head : 'ผลการบันทึก', body : 'เกิดข้อผิดพลาดในการบันทึกเครื่องปรับอากาศ!' })
+        new Notify({ red: true, head : 'ผลการบันทึก', body : 'เกิดข้อผิดพลาดในการบันทึกเครื่องปรับอากาศ!' })
+        let loading = document.getElementById('now-loading')
+        if (loading) loading.remove()
       })
     }
   }
@@ -246,8 +258,18 @@ export default class extends page {
   async AirDelete(id, query) {
     return async (e) => {
       e.preventDefault()
-      const user = await this.Account.GetOnce()
+
+      const user = await this.Account.isAlive()
       if (!user) return
+
+      let loading = document.getElementById('now-loading')
+      if (!loading) {
+        loading = document.createElement('div')
+        loading.id = 'now-loading'
+        loading.className = 'now-loading'
+        loading.innerHTML = '<h1>Now Loading....</h1>'
+      }
+
       return await fetch(`${this.api_root}/device/delete`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${user.token}` },
@@ -264,9 +286,13 @@ export default class extends page {
         if (devices.length < 1) { return this.HandlerNoDevice(query.location) }
         await this.DrawDevices(devices, query)
         new Notify({ head : 'ผลการบันทึก', body : 'บันทึกสถานที่สำเร็จ!' })
+        let loading = document.getElementById('now-loading')
+        if (loading) loading.remove()
       }).catch(async error => {
+        new Notify({ red: true, head : 'ผลการบันทึก', body : 'เกิดข้อผิดพลาดในการบันทึกเครื่องปรับอากาศ!' })
         console.error(error)
-        new Notify({ head : 'ผลการบันทึก', body : 'เกิดข้อผิดพลาดในการบันทึกเครื่องปรับอากาศ!' })
+        let loading = document.getElementById('now-loading')
+        if (loading) loading.remove()
       })
     }
   }
@@ -287,7 +313,7 @@ export default class extends page {
         }
       }
     }).catch(error => {
-      new Notify({ head : 'Sync', body : 'เกิดข้อผิดพลาดในการ Sync เครื่องปรับอากาศ!' })
+      new Notify({ red: true, head : 'Sync', body : 'เกิดข้อผิดพลาดในการ Sync เครื่องปรับอากาศ!' })
       console.error('Error:', error)
     })
   }

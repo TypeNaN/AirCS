@@ -51,7 +51,7 @@ export default class extends page {
     //})
 
     this.body.innerHTML = `
-      <form id="bookingForm">
+      <form id="addingForm">
         <canvas id="geoCanvas" width="358" height="300"></canvas>
         <div id="additionalInfo" style="display: none;">
           <label for="place">สถานที่:</label><input type="text" id="place" name="place" readonly required>
@@ -62,11 +62,20 @@ export default class extends page {
         </div>
       </form>
     `
-    document.getElementById('bookingForm').onsubmit = async (e) => {
+    document.getElementById('addingForm').onsubmit = async (e) => {
       e.preventDefault()
 
-      const user = await this.Account.GetOnce()
+      const user = await this.Account.isAlive()
       if (!user) return
+
+      let loading = document.getElementById('now-loading')
+      if (!loading) {
+        loading = document.createElement('div')
+        loading.id = 'now-loading'
+        loading.className = 'now-loading'
+        loading.innerHTML = '<h1>Now Loading....</h1>'
+        document.body.appendChild(loading)
+      }
 
       const locationPlace   = document.getElementById('place')
       const locationNumber  = document.getElementById('number')
@@ -80,20 +89,24 @@ export default class extends page {
       info.detail = locationDetail.value
       info.phone  = locationPhone.value
 
-      this.Location.Put(info)
-
       await fetch(`${this.api_root}/location/add`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${user.token}` },
         body: JSON.stringify(info),
       }).then(() => {
+        this.Location.Put(info)
         new Notify({ head : 'ผลการบันทึก', body : 'บันทึกสถานที่สำเร็จ!' })
-        document.getElementById('bookingForm').reset()
+        document.getElementById('addingForm').reset()
         document.body.removeChild(this.body)
+        let loading = document.getElementById('now-loading')
+        if (loading) loading.remove()
         setTimeout(() => { this.SPA.Change(this.SPA.Pages.Place) }, 2000)
       }).catch(error => {
-        new Notify({ head : 'ผลการบันทึก', body : 'เกิดข้อผิดพลาดในการบันทึกสถานที่!' })
+        new Notify({ red: true, head : 'ผลการบันทึก', body : 'เกิดข้อผิดพลาดในการบันทึกสถานที่!<br/>กรุณาลองอีกครั้ง<br/>หรือดำเนินการในภายหลัง!' })
         console.error('Error:', error)
+        this.Render(params, query)
+        let loading = document.getElementById('now-loading')
+        if (loading) loading.remove()
       })
     }
 

@@ -22,10 +22,10 @@ export default class extends page {
 
     this.calendar = []
 
-    this.today      = new Date()
-    this.reservDay  = new Date()
-    this.selectDay  = new Date()
-    this.setMinDay  = new Date()
+    this.today      = this.AdjustDate(new Date(), { days: 1 })
+    this.reservDay  = this.AdjustDate(new Date(), { days: 1 })
+    this.selectDay  = this.AdjustDate(new Date(), { days: 1 })
+    this.setMinDay  = this.AdjustDate(new Date(), { days: 1 })
 
     this.today.setHours(0, 0, 0, 0)
     this.reservDay.setHours(0, 0, 0, 0)
@@ -68,7 +68,7 @@ export default class extends page {
     if (this.airs.length < 1) { await this.SPA.Change(this.SPA.Pages.Air, null, { location: this.currentLocationId }) }
 
     this.body.innerHTML = `
-      <form id="bookingForm">
+      <form id="addingForm">
         <label for="location">สถานที่:</label>
         <select id="location" name="location" required>
           ${locations.map(location =>
@@ -145,7 +145,24 @@ export default class extends page {
     return new Intl.DateTimeFormat('th-TH', options).format(date)
   }
 
-  FormatTimeSlot(now) {
+  FormatNotify(now) {
+    const date = new Date(now)
+    //const bangkokOffset = 7 * 60 * 60 * 1000 // Offset for Bangkok in milliseconds
+    const bangkokOffset = 0 // เวลาเครื่องตั้งเป็น เชตเวลากรุงเทพอยู่แล้ว
+    const localTime = new Date(date.getTime() + bangkokOffset)
+
+    // Extract components and adjust the year to Thai Buddhist Calendar
+    const yearBE = localTime.getFullYear() + 543 // Add 543 to convert to B.E.
+    const month = String(localTime.getMonth() + 1).padStart(2, '0') // Month is zero-based
+    const day = String(localTime.getDate()).padStart(2, '0')
+    const hours = String(localTime.getHours()).padStart(2, '0')
+    const minutes = String(localTime.getMinutes()).padStart(2, '0')
+
+    // Format as YYYY-MM-DDTHH:mm:ss
+    return `${day}/${month}/${yearBE} ${hours}:${minutes}`
+  }
+
+ FormatTimeSlot(now) {
     const date = new Date(now)
     if (isNaN(date)) return
     const HH = String(date.getHours()).padStart(2, '0')
@@ -187,12 +204,15 @@ export default class extends page {
   }
 
   async GetCalendarEvents() {
-    const start = this.AdjustDate(this.today, {}, true, true)
-    const end   = this.AdjustDate(this.today, { days: 6, hours: 23, minutes: 59, seconds: 59.999 }, true, true)
+    const user = await this.Account.isAlive()
+    if (!user) return
+
+    const start = this.AdjustDate(this.today, {})
+    const end   = this.AdjustDate(this.today, { days: 6, hours: 23, minutes: 59, seconds: 59.999 })
 
     await fetch(`${this.api_root}/booking/getEvents`, {
       method  : 'POST',
-      headers : { 'Content-Type': 'application/json', Authorization: `Bearer ${this.user.token}` },
+      headers : { 'Content-Type': 'application/json', Authorization: `Bearer ${user.token}` },
       body: JSON.stringify({
         start : this.FormatGetCalendar(start),
         end   : this.FormatGetCalendar(end)
@@ -248,12 +268,13 @@ export default class extends page {
 
   DrawDevice() {
     this.needClean = []
+    this.period = []
     const device_list = document.getElementById('device-list')
     const filtered = this.airs.filter(device => device.lid === this.currentLocationId)
     if (filtered.length < 1) {
       device_list.innerHTML = `
           <div class="device-checkbox-container">
-            ไม่มีแอร์ในสถานที่นี้ ควรเพิ่มแอร์ก่อนจอง
+            <center>ไม่มีแอร์ในสถานที่นี้ ควรเพิ่มแอร์ก่อนจอง</center>
           </div>
         `
       return
@@ -265,7 +286,7 @@ export default class extends page {
         return  `
             <div class="device-checkbox-container">
               <input type="checkbox" id="checkbox-${device.id}" class="device-checkbox" name="checkbox-${device.id}" value="${device.id}" disabled>
-              <label class="label-checkbox" for="checkbox-${device.id}">${device.name} - ${device_props.btu[device.btu].name}<br/>${device.detail}</label>
+              <label class="label-checkbox" for="checkbox-${device.id}">${device.name} - ${device_props.type[device.type].btu[device.btu].name}<br/>${device.detail}</label>
               <p class="device-booked">จองแล้ว</p>
             </div>
           `
@@ -273,7 +294,7 @@ export default class extends page {
         return  `
             <div class="device-checkbox-container">
               <input type="checkbox" id="checkbox-${device.id}" class="device-checkbox" name="checkbox-${device.id}" value="${device.id}">
-              <label class="label-checkbox" for="checkbox-${device.id}">${device.name} - ${device_props.btu[device.btu].name}<br/>${device.detail}</label>
+              <label class="label-checkbox" for="checkbox-${device.id}">${device.name} - ${device_props.type[device.type].btu[device.btu].name}<br/>${device.detail}</label>
             </div>
           `
       }
@@ -298,7 +319,7 @@ export default class extends page {
     const container = document.getElementById('calendar-day-container')
     container.innerHTML = ''
 
-    const days = [0, 1, 2, 3, 4, 5, 6]
+    const days = [ 0, 1, 2, 3, 4, 5, 6 ]
     const timeSlots = [
       { start: '09:00', end: '12:00' },
       { start: '13:00', end: '15:00' },
@@ -452,7 +473,7 @@ export default class extends page {
           }
         } else {
           if (this.needClean.length < 1) { return new Notify({ killall: true, red: true, head : 'การจอง', body : 'ยังไม่ได้เลือกแอร์ที่ต้องการล้าง!' }) }
-          if (dayIndex < 1) { return new Notify({ killall: true, red: true, head : 'การจอง', body : 'กรุณาเลือกจองเป็นวันถัดไป!' }) }
+          //if (dayIndex < 1) { return new Notify({ killall: true, red: true, head : 'การจอง', body : 'กรุณาเลือกจองเป็นวันถัดไป!' }) }
 
           this.DrawEventElement(hourIndex, dayIndex, this.needClean.length)
           this.currentHourIndex  = hourIndex
@@ -466,21 +487,21 @@ export default class extends page {
     return async (e) => {
       e.preventDefault()
 
-      document.getElementById('bookingForm').reset()
+      if (this.needClean.length < 1) { return new Notify({ killall: true, red: true, head : 'การจอง', body : 'ยังไม่ได้เลือกแอร์ที่ต้องการล้าง!' }) }
+      if (this.period.length < 1) return new Notify({ killall: true, red: true, head : 'การจอง', body : 'ยังไม่ได้เลือกวันที่ต้องการจอง!' })
+
+      document.getElementById('addingForm').reset()
+
+      let loading = document.getElementById('now-loading')
+      if (!loading) {
+        loading = document.createElement('div')
+        loading.id = 'now-loading'
+        loading.className = 'now-loading'
+        loading.innerHTML = '<h1>Now Loading....</h1>'
+      }
 
       if (!this.SubmittingEvent) {
         this.SubmittingEvent = true
-        if (this.period.length === 1) {
-          const reserv = this.period[0]
-          const start = this.AdjustDate(this.today, { days: reserv.day, hours: reserv.start } )
-          const end   = this.AdjustDate(this.today, { days: reserv.day, hours: reserv.end } )
-          return await this.BookingAdd({
-            summary     : 'นัดหมายใหม่',
-            description : reserv.did,
-            start       : this.FormatAddCalendar(start),
-            end         : this.FormatAddCalendar(end),
-          })
-        }
 
         const events = []
         this.period.forEach(async reserv => {
@@ -496,26 +517,96 @@ export default class extends page {
         })
 
         console.log('events', events.length)
-        await this.BookingAddBatch(events)
+        await this.BookingPrice(events)
       }
     }
   }
 
+  async BookingPrice(events) {
+    console.log(events)
+
+    let total = 0
+    const pricing = document.createElement('div')
+    pricing.style.width = '100%'
+    pricing.innerHTML = `
+      <table>
+        <thead>
+          <tr>
+            <td>ประเภท</td>
+            <td>ขนาด BTU</td>
+            <td>น้ำยา</td>
+            <td>ราคา</td>
+          </tr>
+        </thead>
+        <tbody id="list">
+        </tbody>
+      </table>
+      <div>
+      <div>รวมราคา: </div>
+      <div id="total"></div>
+      </div>
+    `
+
+    events.forEach(async event => {
+      const device = await this.Device.GetBy(event.description)
+      const price  = device_props.type[device.type].btu[device.btu].price
+      total += price
+      document.getElementById('total').innerText = total
+      document.getElementById('list').innerHTML += `
+        <tr>
+          <td>${device_props.type[device.type].name}</td>
+          <td>${device_props.type[device.type].btu[device.btu].name}</td>
+          <td>${device_props.coolant[device.coolant].name}</td>
+          <td>${device.last || 'ยังไม่เคยล้าง'}</td>
+          <td>${price}</td>
+        </tr>
+      `
+    })
+
+    new Dialog({
+      head    : 'ตรวจสอบรายละเอียด',
+      body    : pricing,
+      accept  : { label: '✔ จอง', callback: () => {
+        console.log('จอง')
+        if (events.length === 1) this.BookingAdd(events[0])
+        else this.BookingAddBatch(events)
+      } },
+      cancel  : { label: '✘ ทิ้ง', callback: e => {
+        let loading = document.getElementById('now-loading')
+        if (loading) loading.remove()
+        this.DrawDevice()
+        this.DrawCalendar()
+      }},
+      x : () => {
+        let loading = document.getElementById('now-loading')
+        if (loading) loading.remove()
+        this.DrawDevice()
+        this.DrawCalendar()
+      }
+    })
+  }
+
   async BookingAdd(event) {
-    console.log(event)
+    const user = await this.Account.isAlive()
+    if (!user) {
+      let loading = document.getElementById('now-loading')
+      if (loading) loading.remove()
+      return
+    }
+
     await fetch(`${this.api_root}/booking/add`, {
       method  : 'POST',
-      headers : { 'Content-Type': 'application/json', Authorization: `Bearer ${this.user.token}` },
+      headers : { 'Content-Type': 'application/json', Authorization: `Bearer ${user.token}` },
       body: JSON.stringify(event),
     }).then(async (response) => {
-      console.log(response)
       if (response.status === 409) {
         new Notify({ red: true, head : 'ผลการจองคิว', body : 'เกิดข้อผิดพลาดในการจองคิว!<br/>มีใครบางคนจองก่อนหน้าคุณเพียงนิดเดียว<br/>คุณอาจต้องเลือกจองวันอื่นแทน' })
+        let loading = document.getElementById('now-loading')
+        if (loading) loading.remove()
         return await this.GetCalendarEvents()
       }
       if (response.ok) {
         const result  = await response.json()
-        console.log(result)
         const air     = await this.Device.GetBy(result.description)
         const booked  = this.Booking.Schema()
         booked.id     = result.id
@@ -532,36 +623,48 @@ export default class extends page {
           booked.lid  = 'secret'
         }
 
-        console.log(booked)
         await this.Booking.Add(booked)
         this.calendar.push(result)
-        document.getElementById('bookingForm').reset()
+        document.getElementById('addingForm').reset()
         new Notify({ head : 'ผลการจองคิว', body : 'จองคิวสำเร็จ!' })
+        let loading = document.getElementById('now-loading')
+        if (loading) loading.remove()
         this.DrawDevice()
         this.DrawCalendar()
         return
       }
       new Notify({ red: true, head : 'ผลการจองคิว', body : 'เกิดข้อผิดพลาดในการจองคิว!' })
+      let loading = document.getElementById('now-loading')
+      if (loading) loading.remove()
     }).catch(async error => {
       new Notify({ red: true, head : 'ผลการจองคิว', body : 'เกิดข้อผิดพลาดในการจองคิว!' })
       console.error('Error:', error)
+      let loading = document.getElementById('now-loading')
+      if (loading) loading.remove()
     })
   }
 
   async BookingAddBatch(events) {
-    console.log(events)
+    const user = await this.Account.isAlive()
+    if (!user) {
+      let loading = document.getElementById('now-loading')
+      if (loading) loading.remove()
+      return
+    }
+
     await fetch(`${this.api_root}/booking/batch/add`, {
       method  : 'POST',
-      headers : { 'Content-Type': 'application/json', Authorization: `Bearer ${this.user.token}` },
+      headers : { 'Content-Type': 'application/json', Authorization: `Bearer ${user.token}` },
       body: JSON.stringify({ events: events }),
     }).then(async (response) => {
       if (response.status === 409) {
         new Notify({ red: true, head : 'ผลการจองคิว', body : 'เกิดข้อผิดพลาดในการจองคิว!<br/>มีใครบางคนจองก่อนหน้าคุณเพียงนิดเดียว<br/>คุณอาจต้องเลือกจองวันอื่นแทน' })
+        let loading = document.getElementById('now-loading')
+        if (loading) loading.remove()
         return await this.GetCalendarEvents()
       }
       if (response.ok) {
         const result  = await response.json()
-        console.log(result)
         const error = await new Promise(async (resolve, reject) => {
           result.forEach(async (item, index, array) => {
             const air     = await this.Device.GetBy(item.description)
@@ -588,24 +691,39 @@ export default class extends page {
 
         if (!error) {
           new Notify({ head : 'ผลการจองคิว', body : 'จองคิวสำเร็จ!' })
+          document.getElementById('addingForm').reset()
+          let loading = document.getElementById('now-loading')
+          if (loading) loading.remove()
           this.DrawDevice()
           this.DrawCalendar()
           return
         }
       }
       new Notify({ red: true, head : 'ผลการจองคิว', body : 'เกิดข้อผิดพลาดในการจองคิว!' })
+      let loading = document.getElementById('now-loading')
+      if (loading) loading.remove()
     }).catch(async error => {
       new Notify({ red: true, head : 'ผลการจองคิว', body : 'เกิดข้อผิดพลาดในการจองคิว!' })
       console.error('Error:', error)
+      let loading = document.getElementById('now-loading')
+      if (loading) loading.remove()
     })
   }
 
   BookingDelete(target) {
     return async (e) => {
       e.preventDefault()
+
+      const user = await this.Account.isAlive()
+      if (!user) {
+        let loading = document.getElementById('now-loading')
+        if (loading) loading.remove()
+        return
+      }
+
       await fetch(`${this.api_root}/booking/delete`, {
         method  : 'POST',
-        headers : { 'Content-Type': 'application/json', Authorization: `Bearer ${this.user.token}` },
+        headers : { 'Content-Type': 'application/json', Authorization: `Bearer ${user.token}` },
         body: JSON.stringify({ id: target.booked.id}),
       }).then(async (response) => {
         if (response.ok) {
@@ -615,12 +733,18 @@ export default class extends page {
           this.DrawDevice()
           this.DrawCalendar()
           new Notify({ head : 'ผลการยกเลิกคิว', body : 'ยกเลิกคิวสำเร็จ!' })
+          let loading = document.getElementById('now-loading')
+          if (loading) loading.remove()
           return
         }
         new Notify({ red: true, head : 'ผลการจองคิว', body : 'เกิดข้อผิดพลาดในการยกเลิกคิว!' })
+        let loading = document.getElementById('now-loading')
+        if (loading) loading.remove()
       }).catch(error => {
-        console.error('Error:', error)
         new Notify({ red: true, head : 'ผลการจองคิว', body : 'เกิดข้อผิดพลาดในการยกเลิกคิว!' })
+        console.error('Error:', error)
+        let loading = document.getElementById('now-loading')
+        if (loading) loading.remove()
       })
     }
   }

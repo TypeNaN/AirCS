@@ -98,9 +98,9 @@ export default class extends dbquery {
     this._Refreshing = setTimeout(async () => {
       await fetch(`${this.api_root}/user/refresh`, {
         method  : 'POST',
-        headers : { 'Content-Type': 'application/json', Authorization: `Bearer ${user.token}` },
+        headers : { Authorization: `Bearer ${user.token}` },
       }).then(async (response) => {
-        if (response.status !== 200) return
+        if (response.status !== 200) return window.location.href = '/AirCS/'
         if (response.ok) {
           const result = await response.json()
           user.token    = result.token

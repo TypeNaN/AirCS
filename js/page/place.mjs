@@ -162,7 +162,7 @@ export default class extends page {
           head    : 'แก้ไขสถานที่',
           body    : editing,
           accept  : { label: '✔ บันทึก' , callback: await this.PlaceEdit(loc) },
-          cancel  : { label: '✘ ทิ้ง'   , callback: (e) => console.log('ทิ้ง') },
+          cancel  : { label: '✘ ทิ้ง'   , callback: null },
         })
       }
 
@@ -173,7 +173,7 @@ export default class extends page {
           head    : 'ลบสถานที่',
           body    : `ทำการลบสถานที่ ${location.place} อาคารเลขที่ ${location.number} ออกจากรายการ<br/>เครื่องปรับอากาศที่เพิ่มไว้ในสถานที่นี้จะถูกลบไปด้วยทั้งหมด<br/>การจองคิวทั้งหมดที่เครื่องปรับอากาศนั้นได้จองไว้ก็จะถูกยกเลิกด้วยเช่นกัน`,
           accept  : { label: '✔ ลบเลย', callback: await this.PlaceDelete(location.id) },
-          cancel  : { label: '✘ ยกเลิก', callback: (e) => console.log(e) },
+          cancel  : { label: '✘ ยกเลิก', callback: null },
         })
       }
     })
@@ -190,8 +190,18 @@ export default class extends page {
 
   async PlaceEdit(loc) {
     return async (e) => {
-      const user = await this.Account.GetOnce()
+      const user = await this.Account.isAlive()
       if (!user) return
+
+      let loading = document.getElementById('now-loading')
+      if (!loading) {
+        loading = document.createElement('div')
+        loading.id = 'now-loading'
+        loading.className = 'now-loading'
+        loading.innerHTML = '<h1>Now Loading....</h1>'
+        document.body.appendChild(loading)
+      }
+
       return await fetch(`${this.api_root}/location/patch`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${user.token}` },
@@ -201,9 +211,13 @@ export default class extends page {
         await this.Location.Put(loc)
         await this.DrawLocations(await this.Location.Get())
         new Notify({ head : 'ผลการบันทึก', body : 'บันทึกสถานที่สำเร็จ!' })
+        let loading = document.getElementById('now-loading')
+        if (loading) loading.remove()
       }).catch(async error => {
         console.error(error)
-        new Notify({ head : 'ผลการบันทึก', body : 'เกิดข้อผิดพลาดในการบันทึกสถานที่!' })
+        new Notify({ red: true, head : 'ผลการบันทึก', body : 'เกิดข้อผิดพลาดในการบันทึกสถานที่!' })
+        let loading = document.getElementById('now-loading')
+        if (loading) loading.remove()
       })
     }
   }
@@ -212,15 +226,24 @@ export default class extends page {
     return async (e) => {
       e.preventDefault()
 
+      const user = await this.Account.isAlive()
+      if (!user) return
+
+      let loading = document.getElementById('now-loading')
+      if (!loading) {
+        loading = document.createElement('div')
+        loading.id = 'now-loading'
+        loading.className = 'now-loading'
+        loading.innerHTML = '<h1>Now Loading....</h1>'
+        document.body.appendChild(loading)
+      }
+
       const devices = await this.Device.GetFrom('location', id)
       const error = await this.DeviceDelete(devices)
       if (error) {
         console.error(error)
         return error
       }
-
-      const user = await this.Account.GetOnce()
-      if (!user) return
 
       return await fetch(`${this.api_root}/location/delete`, {
         method: 'POST',
@@ -232,10 +255,14 @@ export default class extends page {
         const locations = await this.Location.Get()
         await this.DrawLocations(locations)
         new Notify({ head : 'ผลการลบ', body : 'ลบสถานที่สำเร็จ!' })
+        let loading = document.getElementById('now-loading')
+        if (loading) loading.remove()
         if (locations.length < 1) { return this.HandlerNoLocation() }
       }).catch(async error => {
         console.error(error)
-        new Notify({ head : 'ผลการลบ', body : 'เกิดข้อผิดพลาดในการลบสถานที่!' })
+        new Notify({ red: true, head : 'ผลการลบ', body : 'เกิดข้อผิดพลาดในการลบสถานที่!' })
+        let loading = document.getElementById('now-loading')
+        if (loading) loading.remove()
       })
     }
   }
@@ -260,7 +287,7 @@ export default class extends page {
       return error
     }
 
-    const user = await this.Account.GetOnce()
+    const user = await this.Account.isAlive()
     if (!user) return
 
     return await fetch(`${this.api_root}/device/batch/delete`, {
@@ -280,7 +307,7 @@ export default class extends page {
       return errmsg
     }).catch(async error => {
       console.error(error)
-      new Notify({ head : 'ผลการลบ', body : 'เกิดข้อผิดพลาดในการลบเครื่องปรับอากาศ!' })
+      new Notify({ red: true, head : 'ผลการลบ', body : 'เกิดข้อผิดพลาดในการลบเครื่องปรับอากาศ!' })
     })
   }
 
@@ -288,7 +315,7 @@ export default class extends page {
 
     if (!Array.isArray(bookings) || bookings.length === 0) return false
 
-    const user = await this.Account.GetOnce()
+    const user = await this.Account.isAlive()
     if (!user) return
 
     return await fetch(`${this.api_root}/booking/batch/delete`, {
@@ -329,7 +356,7 @@ export default class extends page {
         }
       }
     }).catch(error => {
-      new Notify({ head : 'Sync', body : 'เกิดข้อผิดพลาดในการ Sync สถานที่!' })
+      new Notify({ red:true, head : 'Sync', body : 'เกิดข้อผิดพลาดในการ Sync สถานที่!' })
       console.error('Error:', error)
     })
   }
@@ -339,7 +366,7 @@ export default class extends page {
       head    : `ไม่พบสถานที่`,
       body    : 'ไม่พบสถานที่ หรือสถานที่อาจถูกลบไปแล้ว',
       accept  : { label: '✔ เพิ่มสถานที่' , callback: async (e) => await this.SPA.Change(this.SPA.Pages.PlaceAdd) },
-      cancel  : { label: '✘ ปิด'       , callback: () => false },
+      cancel  : { label: '✘ ปิด'       , callback: null },
     })
   }
 
