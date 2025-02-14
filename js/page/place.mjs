@@ -370,7 +370,7 @@ export default class extends page {
       accept  : { label: '✔ เพิ่มสถานที่' , callback: async (e) => await this.SPA.Change(this.SPA.Pages.PlaceAdd) },
       cancel  : { label: '✘ ปิด'       , callback: e => false },
     })
-    document.getElementById('syncButton').onclick = () => window.location.href = this.base
+    document.getElementById('syncButton').onclick = () => window.location.reload()
     return dialog
   }
 

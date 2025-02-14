@@ -303,13 +303,12 @@ export default class extends page {
     filtered.forEach(device => {
       const checkbox = document.getElementById(`checkbox-${device.id}`)
       checkbox.onchange = () => {
-        if (checkbox.checked) {
-          this.needClean.push(device)
-        }
+        if (checkbox.checked) this.needClean.push(device)
         else {
           const index = this.needClean.indexOf(device)
           if (index > -1) { this.needClean.splice(index, 1) }
         }
+        this.DrawCalendar()
       }
     })
   }
