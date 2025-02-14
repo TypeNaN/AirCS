@@ -516,12 +516,12 @@ export default class extends page {
           events.push(event)
         })
 
-        await this.BookingPrice(events)
+        await this.BookingQuote(events)
       }
     }
   }
 
-  async BookingPrice(events) {
+  async BookingQuote(events) {
     let total = 0
     const quote = document.createElement('div')
     quote.className = 'quote-container'
@@ -542,8 +542,6 @@ export default class extends page {
       <div id="booking-date-end" class="booking-date"></div>
     `
 
-    console.log(this.period)
-    console.log(this.needClean)
     events.forEach(async (event, index) => {
       const device = await this.Device.GetBy(event.description)
       const price  = device_props.type[device.type].btu[device.btu].price
@@ -562,7 +560,7 @@ export default class extends page {
 
     new Dialog({
       head    : 'ตรวจสอบรายละเอียด',
-      body    : pricing,
+      body    : quote,
       accept  : { label: '✔ จอง', callback: () => {
         if (events.length === 1) this.BookingAdd(events[0])
         else this.BookingAddBatch(events)

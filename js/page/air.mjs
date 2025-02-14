@@ -195,7 +195,6 @@ export default class extends page {
   }
 
   RenderAirBTU(container, type, selected) {
-    console.log(type, selected)
     container.innerHTML = ''
     device_props.type[type].btu.map((item, index) => {
       let ops = ''

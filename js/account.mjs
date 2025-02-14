@@ -88,7 +88,7 @@ export default class extends dbquery {
     }
 
     const user = await this.GetOnce()
-    if (!user) return
+    if (!user) return window.location.reload()
 
     let milliseconds = 0
     const calc = (user.expire * 1000) - Date.now()
@@ -100,7 +100,7 @@ export default class extends dbquery {
         method  : 'POST',
         headers : { Authorization: `Bearer ${user.token}` },
       }).then(async (response) => {
-        if (response.status !== 200) return window.location.href = '/AirCS/'
+        if (response.status !== 200) return window.location.reload()
         if (response.ok) {
           const result = await response.json()
           user.token    = result.token
@@ -115,6 +115,7 @@ export default class extends dbquery {
       }).catch(error => {
         console.error('Error:', error)
         this._isRefreshing = false
+        return window.location.reload()
       })
     }, milliseconds)
   }
@@ -127,11 +128,11 @@ export default class extends dbquery {
       headers : { 'Content-Type': 'application/json', Authorization: `Bearer ${user.token}` },
     }).then(async (response) => {
       await this.Delete(user.id)
-      return window.location.href = '/AirCS/'
+      return window.location.reload()
     }).catch(async error => {
       console.error('Error:', error)
       await this.Clear()
-      return window.location.href = '/AirCS/'
+      return window.location.reload()
     })
   }
 
@@ -147,8 +148,8 @@ export default class extends dbquery {
   }
 
   async Profile(parent) {
-    let user = await this.GetOnce()
-    if (!user) return
+    let user = await this.isAlive()
+    if (!user) return window.location.reload()
 
     this.RequestRefresh()
 

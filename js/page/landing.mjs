@@ -20,6 +20,7 @@ export default class extends Page {
     super.Render(params, query)
 
     if (query && query.code && query.state) {
+      new Notify({ head : 'Authorize', body : "ตรวจสอบการรับรองการเข้าสู่ระบบ<br/> กรุณารอสักครู่" })
       const authorize = await this.Account.RequestLogin(query.code)
       if (authorize) {
         window.history.replaceState(null, '', `${this.base}/`)
