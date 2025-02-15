@@ -67,33 +67,37 @@ export default class extends page {
         <label>ขนาด:</label> <div id="btu-${device.id}" class="device-btu">${device_props.type[device.type].btu[device.btu].name}</div>
         <label>น้ำยา:</label> <div id="coolant-${device.id}" class="device-coolant">${device_props.coolant[device.coolant].name}</div>
         <label>ล้างครั้งล่าสุด:</label> <div id="last-${device.id}" class="device-last">${device.last || 'ยังไม่เคยล้าง'}</div>
-        <div class="location-footer">
+        <div class="location-actions">
 
-          <svg id="icon-svg-edit-${device.id}"
-            class="icon-svg-edit"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round">
-            <path d="M 12,2 H 5 c -1,0 -2,0 -2,2 V 20 c 0,1 0,2 2,2 H 19 c 1,0 2,-0 2,-2 v -9" />
-            <path d="m 17,2 a 2,2 0 0 1 3,2 L 12,16 8,17 8,13 Z" id="path2" />
-          </svg>
+          <div class="icon-svg-container">
+            <svg id="icon-svg-edit-${device.id}"
+              class="icon-svg-edit"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round">
+              <path d="M 12,2 H 5 c -1,0 -2,0 -2,2 V 20 c 0,1 0,2 2,2 H 19 c 1,0 2,-0 2,-2 v -9" />
+              <path d="m 17,2 a 2,2 0 0 1 3,2 L 12,16 8,17 8,13 Z" id="path2" />
+            </svg>
+          </div>
 
-          <svg id="icon-svg-remove-${device.id}"
-            class="icon-svg-remove"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round">
-            <polyline points="3 6 5 6 21 6"></polyline>
-            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-            <line x1="10" y1="11" x2="10" y2="17"></line>
-            <line x1="14" y1="11" x2="14" y2="17"></line>
-          </svg>
+          <div class="icon-svg-container">
+            <svg id="icon-svg-remove-${device.id}"
+              class="icon-svg-remove"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round">
+              <polyline points="3 6 5 6 21 6"></polyline>
+              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+              <line x1="10" y1="11" x2="10" y2="17"></line>
+              <line x1="14" y1="11" x2="14" y2="17"></line>
+            </svg>
+          </div>
 
         </div>
       `

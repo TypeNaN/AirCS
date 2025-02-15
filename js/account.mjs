@@ -88,7 +88,7 @@ export default class extends dbquery {
     }
 
     const user = await this.GetOnce()
-    if (!user) return window.location.reload()
+    if (!user) return this.RequestAuthorize()
 
     let milliseconds = 0
     const calc = (user.expire * 1000) - Date.now()
@@ -149,7 +149,7 @@ export default class extends dbquery {
 
   async Profile(parent) {
     let user = await this.isAlive()
-    if (!user) return window.location.reload()
+    if (!user) return this.RequestAuthorize()
 
     this.RequestRefresh()
 

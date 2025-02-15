@@ -77,7 +77,8 @@ export default class extends page {
         </select>
         <label for="device-list">ต้องการล้าง: (เรียงลำดับตามการติ๊กเลือก)</label>
         <div id="device-list" name="device-list"></div>
-        <label for="calendar-container">เลือกช่วงเวลา:<br/>* จองซ้อน จองกระโดดข้าม จองเลยปฏิทิน จะถูกตัดทิ้งอัติโนมัติ</label>
+        <label for="calendar-container">เลือกช่วงเวลา:</label>
+        <span id="calendar-container-span">* จองซ้อน จองกระโดดข้าม จองเลยปฏิทิน จะถูกตัดทิ้งอัติโนมัติ
         <div id="calendar-container" name="calendar-container">
           <div id="calendar-button-wraper">
             <div id="calendar-backward">ย้อน</div>

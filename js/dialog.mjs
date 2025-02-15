@@ -19,7 +19,7 @@ export default class {
 
     this.dialog = document.createElement( 'div' )
     this.dialog.style.position = 'relative'
-    this.dialog.style.width = 'clamp(400px, 70vw, 600px)'
+    this.dialog.style.width = 'clamp(380px, 70vw, 600px)'
     this.dialog.style.minHeight = '180px'
     this.dialog.style.maxHeight = '600px'
     //this.dialog.style.height = 'clamp(180px, 70vh, 600px)'

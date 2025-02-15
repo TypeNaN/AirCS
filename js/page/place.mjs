@@ -39,6 +39,10 @@ export default class extends page {
 
     await this.DrawLocations(locations)
     if (locations.length < 1) { return this.HandlerNoLocation() }
+    else {
+      const devices = await this.Device.GetFrom('location', locations[0].id)
+      if (devices.length < 1) { return this.HandlerNoDevice(locations[0].id) }
+    }
 
   }
 
@@ -53,56 +57,69 @@ export default class extends page {
       item.id         = `location-${location.id}`
       item.className  = 'location-item'
       item.innerHTML  = `
+        <div class="location-actions">
+
+          <div class="icon-svg-container">
+            <svg id="icon-svg-air-${location.id}"
+              class="icon-svg-air"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round">
+              <path d="m 14.122544,2.3464 c 5.955312,-2.30521549 7.774767,5.5961151 7.960646,12.479596 L 2.0245275,16.470561 2.0268175,6.1415501 Z" />
+              <path d="M 4.6611738,12.810719 15.243479,10.991466" />
+              <path d="M 6.5351562,18.742577 3.8657226,22.053856" />
+              <path d="M 11.802124,18.742577 9.1326903,22.053856" />
+              <path d="m 17.069092,18.742577 -2.669434,3.311279" />
+            </svg>
+            <span id="icon-svg-air-${location.id}-span" class="icon-svg-air-span"></span>
+          </div>
+
+          <div class="icon-svg-container">
+            <svg id="icon-svg-edit-${location.id}"
+              class="icon-svg-edit"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round">
+              <path d="M 12,2 H 5 c -1,0 -2,0 -2,2 V 20 c 0,1 0,2 2,2 H 19 c 1,0 2,-0 2,-2 v -9" />
+              <path d="m 17,2 a 2,2 0 0 1 3,2 L 12,16 8,17 8,13 Z" id="path2" />
+            </svg>
+          </div>
+
+          <div class="icon-svg-container">
+            <svg id="icon-svg-remove-${location.id}"
+              class="icon-svg-remove"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round">
+              <polyline points="3 6 5 6 21 6"></polyline>
+              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+              <line x1="10" y1="11" x2="10" y2="17"></line>
+              <line x1="14" y1="11" x2="14" y2="17"></line>
+            </svg>
+          </div>
+
+        </div>
+
         <label>สถานที่:</label><div id="place-${location.id}" class="location-place">${location.place}</div>
         <label>เลขที่:</label><div id="number-${location.id}" class="location-number">${location.number}</div>
         <label>เบอร์ติดต่อ:</label><div id="phone-${location.id}" class="location-phone"> ${location.phone}</div>
         <label>รายละเอียด:</label><div id="detail-${location.id}" class="location-detail"> ${location.detail}</div>
-        <div class="location-footer">
-
-          <svg id="icon-svg-air-${location.id}"
-            class="icon-svg-air"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round">
-            <path d="m 14.122544,2.3464 c 5.955312,-2.30521549 7.774767,5.5961151 7.960646,12.479596 L 2.0245275,16.470561 2.0268175,6.1415501 Z" />
-            <path d="M 4.6611738,12.810719 15.243479,10.991466" />
-            <path d="M 6.5351562,18.742577 3.8657226,22.053856" />
-            <path d="M 11.802124,18.742577 9.1326903,22.053856" />
-            <path d="m 17.069092,18.742577 -2.669434,3.311279" />
-          </svg>
-
-          <svg id="icon-svg-edit-${location.id}"
-            class="icon-svg-edit"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round">
-            <path d="M 12,2 H 5 c -1,0 -2,0 -2,2 V 20 c 0,1 0,2 2,2 H 19 c 1,0 2,-0 2,-2 v -9" />
-            <path d="m 17,2 a 2,2 0 0 1 3,2 L 12,16 8,17 8,13 Z" id="path2" />
-          </svg>
-
-          <svg id="icon-svg-remove-${location.id}"
-            class="icon-svg-remove"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round">
-            <polyline points="3 6 5 6 21 6"></polyline>
-            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-            <line x1="10" y1="11" x2="10" y2="17"></line>
-            <line x1="14" y1="11" x2="14" y2="17"></line>
-          </svg>
-
-        </div>
       `
       container.appendChild(item)
+
+      locations.forEach(async location => {
+        const devices = await this.Device.GetFrom('location', location.id)
+        document.getElementById(`icon-svg-air-${location.id}-span`).textContent = devices.length
+      })
 
       document.getElementById(`icon-svg-air-${location.id}`).onclick = async (e) => {
         return await this.SPA.Change(this.SPA.Pages.Air, null, { location: location.id })
@@ -372,6 +389,15 @@ export default class extends page {
     })
     document.getElementById('syncButton').onclick = () => window.location.reload()
     return dialog
+  }
+
+  HandlerNoDevice(location) {
+    return new Dialog({
+      head    : `ไม่พบแอร์`,
+      body    : 'ไม่พบแอร์ หรือแอร์อาจถูกลบไปแล้ว',
+      accept  : { label: '✔ เพิ่มแอร์' , callback: async (e) => await this.SPA.Change(this.SPA.Pages.AirAdd, null, { location: location }) },
+      cancel  : { label: '✘ กลับ'    , callback: async (e) => await this.SPA.Change(this.SPA.Pages.Place) },
+    })
   }
 
 }

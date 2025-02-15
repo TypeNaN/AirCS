@@ -20,7 +20,7 @@ export default class {
 
     this.dom = document.createElement( 'div' )
     this.dom.style.position = 'relative'
-    this.dom.style.width = 'clamp(400px, 70%, 600px)'
+    this.dom.style.width = 'clamp(380px, 70%, 600px)'
     this.dom.style.minHeight = '70px'
     this.dom.style.margin = '0 auto 2px auto'
     this.dom.style.padding = '5px'

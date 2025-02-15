@@ -36,6 +36,7 @@ body {
   background-color:#f9f9f9;
   color:#666666;
   font-family:monospace;
+  font-size: 1rem;
 }
 h1 {
   font-size:2.22rem;
@@ -107,7 +108,7 @@ button:hover {
   position:relative;
   z-index:1;
   top:50%;
-  width:clamp(300px, 70%, 700px);
+  width:clamp(300px, 70%, 600px);
   margin:auto;
   transform:translateY(-50%);
   padding:20px;
@@ -123,7 +124,7 @@ button:hover {
 }
 #page-header {
   position:relative;
-  width:clamp(400px, 70%, 700px);
+  width:clamp(380px, 70%, 600px);
   height:160px;
   padding:20px;
   margin:0 auto;
@@ -145,7 +146,7 @@ button:hover {
   padding:5px;
 }
 #page-body {
-  width:clamp(400px, 70%, 700px);
+  width:clamp(380px, 70%, 600px);
   background-color: #ffffffee;
   padding:20px;
   margin:0 auto;
@@ -153,7 +154,7 @@ button:hover {
   box-shadow:0 2px 10px rgba(0, 0, 0, 0.1);
 }
 #page-footer {
-  width:clamp(400px, 70%, 700px);
+  width:clamp(380px, 70%, 700px);
   padding:20px;
   margin:0 auto;
 }
@@ -218,11 +219,18 @@ button:hover {
   position:relative;
   width:100%;
   margin:5px auto;
-  padding:20px;
+  padding:10px;
   border: 1px solid #ddd;
   border-radius:5px;
   background-color:#fff;
   box-shadow:5px 15px 10px #00000056;
+  animation: fade-in 0.5s forwards;
+}
+.location-item {
+  border-left: 6px solid #1e88e5;
+}
+.device-item {
+  border-left: 6px solid #43a047;
 }
 .device-item label,
 .location-item label {
@@ -254,9 +262,35 @@ button:hover {
   overflow-x: hidden;
   overflow-y: auto;
 }
-.device-footer,
-.location-footer {
-  text-align:right;
+.device-actions {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  display: flex;
+  justify-content: right;
+}
+.location-actions {
+  position: absolute;
+  top: 20px;
+  right: 10px;
+  display: flex;
+  justify-content: right;
+}
+.icon-svg-container {
+  position: relative;
+  width: 40px;
+  text-align: right;
+}
+.icon-svg-air-span {
+  position: absolute;
+  top: -14px;
+  right: 0;
+  width: 1rem;
+  height: 1rem;
+  text-align: center;
+  color: #fff;
+  background-color: #00c300;
+  border-radius: 50%;
 }
 .icon-svg-air,
 .icon-svg-remove,
@@ -391,12 +425,17 @@ ul {
   line-height:35px;
   border: 4px solid #0075ff;
 }
+#calendar-container-span {
+  font-size: 0.8rem;
+  color: #f00;
+}
 #calendar-day-container {
   display:flex;
   justify-content: center;
   align-items: center;
   width:100%;
   height:360px;
+  font-size: 0.85rem;
 }
 .calendar-day {
   width:100%;
