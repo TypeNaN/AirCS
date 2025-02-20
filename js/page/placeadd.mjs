@@ -57,7 +57,7 @@ export default class extends page {
           <label for="place">สถานที่:</label><input type="text" id="place" name="place" readonly required>
           <label for="number">บ้านเลขที่:</label><input type="text" id="number" name="number" autocomplete="off" required>
           <label for="phone">เบอร์ติดต่อ:</label><input type="text" id="phone" name="phone" autocomplete="off" required>
-          <label for="detail">รายละเอียดเพิ่มเติม:</label><textarea id="detail" name="detail"></textarea>
+          <label for="detail">รายละเอียดเพิ่มเติม:</label><textarea id="detail" name="detail" placeholder="เช่น เลยวงเวียนที่ 3 ซอยที่ 9 ขวามือหลังที่ 2"></textarea>
           <button type="submit">บันทึกสถานที่</button>
         </div>
       </form>

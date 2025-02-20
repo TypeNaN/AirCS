@@ -57,6 +57,11 @@ export default class extends page {
       item.id         = `location-${location.id}`
       item.className  = 'location-item'
       item.innerHTML  = `
+        <label>สถานที่:</label><div id="place-${location.id}" class="location-place">${location.place}</div>
+        <label>เลขที่:</label><div id="number-${location.id}" class="location-number">${location.number}</div>
+        <label>เบอร์ติดต่อ:</label><div id="phone-${location.id}" class="location-phone"> ${location.phone}</div>
+        <label>รายละเอียด:</label><div id="detail-${location.id}" class="location-detail"> ${location.detail}</div>
+
         <div class="location-actions">
 
           <div class="icon-svg-container">
@@ -108,11 +113,6 @@ export default class extends page {
           </div>
 
         </div>
-
-        <label>สถานที่:</label><div id="place-${location.id}" class="location-place">${location.place}</div>
-        <label>เลขที่:</label><div id="number-${location.id}" class="location-number">${location.number}</div>
-        <label>เบอร์ติดต่อ:</label><div id="phone-${location.id}" class="location-phone"> ${location.phone}</div>
-        <label>รายละเอียด:</label><div id="detail-${location.id}" class="location-detail"> ${location.detail}</div>
       `
       container.appendChild(item)
 
