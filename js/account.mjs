@@ -32,6 +32,7 @@ export default class extends dbquery {
   async RequestAuthorize() {
     fetch(`${this.api_root}/line/authorize`, {
       method  : 'GET',
+      headers : { 'Access-Control-Allow-Origin': '*' },
     }).then(async (response) => {
       if (response.ok) {
         const result = await response.json()
@@ -47,7 +48,10 @@ export default class extends dbquery {
   async RequestLogin(code) {
     return await fetch(`${this.api_root}/user/login`, {
       method  : 'POST',
-      headers : { 'Content-Type': 'application/json' },
+      headers : {
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*' 
+      },
       body: JSON.stringify({ code: code })
     }).then(async (response) => {
       if (!response.ok) return
